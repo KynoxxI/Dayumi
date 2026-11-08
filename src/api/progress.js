@@ -56,14 +56,14 @@ async function getResumeRows() {
         remote = (dbRows || []).map((r) => ({
           episode_key: `${r.anime_slug}:${r.season_id}:${r.episode_number}:${r.language || "VOSTFR"}`,
           anime_slug: r.anime_slug,
-          anime_title: r.title || r.anime_slug,
-          anime_cover: r.cover || null,
+          anime_title: r.anime_title || r.title || r.anime_slug,
+          anime_cover: r.anime_cover || r.cover || null,
           season_id: String(r.season_id),
           episode_number: Number(r.episode_number),
           language: r.language || "VOSTFR",
           position_seconds: Number(r.progress_seconds || 0),
           duration: Number(r.duration_seconds || 0),
-          progress_percent: r.duration_seconds > 0 ? (r.progress_seconds / r.duration_seconds) * 100 : 0,
+          progress_percent: r.progress_percent != null ? Number(r.progress_percent) : (r.duration_seconds > 0 ? (r.progress_seconds / r.duration_seconds) * 100 : 0),
           completed: Boolean(r.completed),
           updated_at: r.updated_at,
         }));

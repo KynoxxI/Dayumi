@@ -203,12 +203,13 @@ let cachedScanItems = [];
 
 export default function ContinueWatching({ defaultTab = null, onlyScans = false }) {
   const session = useAuthStore((s) => s.session);
-  const canResume = !!session && !session.user?.is_anonymous;
+  const user = useAuthStore((s) => s.user);
+  const authUserId = user?.id || session?.user?.id || null;
   const resumeLimit = useSettingsStore((s) => s.resumeLimit);
   const [allItems, setItems] = useState(cachedItems);
   const [scanItems, setScanItems] = useState(cachedScanItems);
   const [activeTab, setActiveTab] = useState(
-    defaultTab || (cachedItems.length ? "anime" : "scans")
+    defaultTab || (onlyScans ? "scans" : cachedItems.length ? "anime" : "anime")
   );
   const reqId = useRef(0);
 
@@ -216,8 +217,8 @@ export default function ContinueWatching({ defaultTab = null, onlyScans = false 
   const ensureListsLoaded = useListsStore((s) => s.ensureLoaded);
   const listStatuses = useListsStore((s) => s.statuses);
   useEffect(() => {
-    if (canResume) ensureListsLoaded();
-  }, [canResume, ensureListsLoaded]);
+    ensureListsLoaded();
+  }, [ensureListsLoaded, authUserId]);
   const items = useMemo(
     () => allItems.filter((i) => i.newEpisode || listStatuses.get(i.slug) !== "completed"),
     [allItems, listStatuses]
@@ -284,40 +285,38 @@ export default function ContinueWatching({ defaultTab = null, onlyScans = false 
   }, [pendingRemoval, handleRemove, handleScanRemove]);
 
   useEffect(() => {
-    if (!canResume) {
-      cachedItems = [];
-      cachedScanItems = [];
-      setItems([]);
-      setScanItems([]);
-      return;
-    }
     const id = ++reqId.current;
     (async () => {
-      // Vivier plus large que l'affichage : un anime « à jour » avec un nouvel épisode a une date de
-      // visionnage ancienne.
-      const candidates = Math.max(24, resumeLimit * 2);
-      const [base, scans] = await Promise.all([
-        getContinueWatching(candidates),
-        getContinueReadingScans(resumeLimit),
-      ]);
-      if (id !== reqId.current) return;
-      cachedScanItems = scans;
-      setScanItems(scans);
-      if (defaultTab === "scans" && scans.length) setActiveTab("scans");
-      else if (!base.length && scans.length) setActiveTab("scans");
-      else if (base.length && !scans.length) setActiveTab("anime");
-      // Synchrone, depuis le cache.
-      setItems(sortResume(advanceCompletedItems(applyCachedEnrichment(base)), resumeLimit));
-      // Résout aussi l'épisode suivant dans une nouvelle saison.
-      const enriched = sortResume(
-        await advanceCompletedItemsAsync(await enrichHistoryItems(base)),
-        resumeLimit
-      );
-      if (id !== reqId.current) return;
-      cachedItems = enriched;
-      setItems(enriched);
+      try {
+        const candidates = Math.max(24, resumeLimit * 2);
+        const [base, scans] = await Promise.all([
+          getContinueWatching(candidates),
+          getContinueReadingScans(resumeLimit),
+        ]);
+        if (id !== reqId.current) return;
+        cachedScanItems = scans || [];
+        setScanItems(scans || []);
+        if (defaultTab === "scans" && scans?.length) setActiveTab("scans");
+        else if (!base?.length && scans?.length) setActiveTab("scans");
+        else if (base?.length) setActiveTab("anime");
+
+        // Synchrone, depuis le cache.
+        const fastItems = sortResume(advanceCompletedItems(applyCachedEnrichment(base || [])), resumeLimit);
+        setItems(fastItems);
+
+        // Résout aussi l'épisode suivant dans une nouvelle saison.
+        const enriched = sortResume(
+          await advanceCompletedItemsAsync(await enrichHistoryItems(base || [])),
+          resumeLimit
+        );
+        if (id !== reqId.current) return;
+        cachedItems = enriched;
+        setItems(enriched);
+      } catch (err) {
+        console.warn("[ContinueWatching] Error loading items:", err);
+      }
     })();
-  }, [canResume, defaultTab, resumeLimit]);
+  }, [authUserId, defaultTab, resumeLimit]);
 
   if (onlyScans ? !scanItems.length : !items.length && !scanItems.length) return null;
 

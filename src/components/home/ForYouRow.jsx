@@ -10,16 +10,12 @@ let cachedRow = null;
 /** Rien sans compte ni historique. */
 export default function ForYouRow() {
   const session = useAuthStore((s) => s.session);
-  const canRecommend = !!session && !session.user?.is_anonymous;
+  const user = useAuthStore((s) => s.user);
+  const authUserId = user?.id || session?.user?.id || null;
   const [row, setRow] = useState(cachedRow);
   const reqId = useRef(0);
 
   useEffect(() => {
-    if (!canRecommend) {
-      cachedRow = null;
-      setRow(null);
-      return;
-    }
     const id = ++reqId.current;
     (async () => {
       const recent = await getContinueWatching(8);
@@ -30,7 +26,7 @@ export default function ForYouRow() {
       cachedRow = data;
       setRow(data);
     })();
-  }, [canRecommend]);
+  }, [authUserId]);
 
   if (!row?.items?.length) return null;
   return <AnimeRow title={row.title} items={row.items} />;
