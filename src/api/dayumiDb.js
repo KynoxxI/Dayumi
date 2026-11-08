@@ -125,6 +125,8 @@ export async function dbSaveProgress({
   durationSeconds,
   completed,
   language,
+  animeTitle,
+  animeCover,
 }) {
   const uid = userId || getUserId();
   try {
@@ -140,6 +142,8 @@ export async function dbSaveProgress({
         durationSeconds: Math.round(durationSeconds || 0),
         completed: Boolean(completed),
         language: language || "VOSTFR",
+        animeTitle: animeTitle || "",
+        animeCover: animeCover || "",
       }),
     });
   } catch (err) {

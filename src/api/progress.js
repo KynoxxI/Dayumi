@@ -186,53 +186,56 @@ export async function getEpisodeProgress(slug, seasonId, episodeNumber, language
   const key = episodeKey(slug, seasonId, episodeNumber, language);
   const local = getLocalProgressList().find((r) => r.episode_key === key);
 
-  if (!userId) {
-    if (local) {
-      return {
-        positionSeconds: local.position_seconds || 0,
-        duration: local.duration || 0,
-        progressPercent: local.progress_percent || 0,
-        completed: local.completed || false,
-      };
-    }
-    return null;
-  }
+  const uid = userId || getUserId();
+  if (uid && uid !== "guest_user") {
+    try {
+      const dbRows = await dbListProgress(uid, slug);
+      if (dbRows && dbRows.length > 0) {
+        const match = dbRows.find(
+          (r) => String(r.season_id) === String(seasonId) && Number(r.episode_number) === Number(episodeNumber)
+        );
+        if (match) {
+          const pos = Number(match.progress_seconds || 0);
+          const dur = Number(match.duration_seconds || 0);
+          const pct = Number(match.progress_percent || (dur > 0 ? (pos / dur) * 100 : 0));
+          return {
+            positionSeconds: pos,
+            duration: dur,
+            progressPercent: pct,
+            completed: Boolean(match.completed),
+          };
+        }
+      }
+    } catch (_) {}
 
-  try {
-    const { data, error } = await supabase
-      .from("episode_progress")
-      .select("position_seconds, duration, progress_percent, completed")
-      .eq("user_id", userId)
-      .eq("episode_key", key)
-      .maybeSingle();
-    if (error || !data) {
-      if (local) {
+    // Fallback Supabase
+    try {
+      const { data, error } = await supabase
+        .from("episode_progress")
+        .select("position_seconds, duration, progress_percent, completed")
+        .eq("user_id", uid)
+        .eq("episode_key", key)
+        .maybeSingle();
+      if (!error && data) {
         return {
-          positionSeconds: local.position_seconds || 0,
-          duration: local.duration || 0,
-          progressPercent: local.progress_percent || 0,
-          completed: local.completed || false,
+          positionSeconds: data.position_seconds || 0,
+          duration: data.duration || 0,
+          progressPercent: data.progress_percent || 0,
+          completed: data.completed || false,
         };
       }
-      return null;
-    }
-    return {
-      positionSeconds: data.position_seconds || 0,
-      duration: data.duration || 0,
-      progressPercent: data.progress_percent || 0,
-      completed: data.completed || false,
-    };
-  } catch (_) {
-    if (local) {
-      return {
-        positionSeconds: local.position_seconds || 0,
-        duration: local.duration || 0,
-        progressPercent: local.progress_percent || 0,
-        completed: local.completed || false,
-      };
-    }
-    return null;
+    } catch (_) {}
   }
+
+  if (local) {
+    return {
+      positionSeconds: local.position_seconds || 0,
+      duration: local.duration || 0,
+      progressPercent: local.progress_percent || 0,
+      completed: local.completed || false,
+    };
+  }
+  return null;
 }
 
 /** @param {string} [p.title] titre de l'anime, pour « Reprendre » */
@@ -281,6 +284,8 @@ export async function saveEpisodeProgress({
       durationSeconds: duration,
       completed,
       language,
+      animeTitle: cleanTitle(title),
+      animeCover: cover,
     }).catch(() => {});
   }
 }
@@ -491,25 +496,37 @@ export async function getLastWatched(slug, userId) {
 
 /** `slug → { lastEpisode, lastSeasonId, lastUpdatedAt, lastPercent, lastCompleted, watchedCount }` */
 export async function getFavoritesProgress() {
-  const { data, error } = await supabase
-    .from("episode_progress")
-    .select("anime_slug, season_id, episode_number, progress_percent, completed, updated_at")
-    .order("updated_at", { ascending: false });
-  if (error || !data) return {};
+  const uid = getUserId();
+  const userId = uid && uid !== "guest_user" ? uid : null;
+  let rows = [];
+
+  if (userId) {
+    try {
+      const dbRows = await dbListProgress(userId);
+      if (dbRows && dbRows.length > 0) {
+        rows = dbRows;
+      }
+    } catch (_) {}
+  }
+
+  if (rows.length === 0) {
+    rows = getLocalProgressList();
+  }
 
   const map = {};
   const seenByAnime = {};
-  for (const row of data) {
+  for (const row of rows) {
     const slug = row.anime_slug;
+    if (!slug) continue;
     let s = map[slug];
     if (!s) {
-      // Trié par updated_at DESC : la première ligne d'un anime est la plus récente.
+      const pct = Math.round(row.progress_percent || (row.duration_seconds > 0 ? (row.progress_seconds / row.duration_seconds) * 100 : 0));
       s = map[slug] = {
-        lastEpisode: row.episode_number,
-        lastSeasonId: row.season_id,
-        lastUpdatedAt: row.updated_at,
-        lastPercent: Math.round(row.progress_percent || 0),
-        lastCompleted: !!row.completed,
+        lastEpisode: Number(row.episode_number || 1),
+        lastSeasonId: String(row.season_id || "1"),
+        lastUpdatedAt: row.updated_at || new Date().toISOString(),
+        lastPercent: pct,
+        lastCompleted: Boolean(row.completed),
         watchedCount: 0,
       };
       seenByAnime[slug] = new Set();
@@ -527,17 +544,33 @@ export async function getFavoritesProgress() {
 
 /** Indexée par `${seasonId}:${episodeNumber}`, toutes langues confondues. */
 export async function getAnimeProgressMap(slug) {
-  const { data, error } = await supabase
-    .from("episode_progress")
-    .select("season_id, episode_number, progress_percent, completed")
-    .eq("anime_slug", slug);
-  if (error || !data) return {};
+  if (!slug) return {};
+  const uid = getUserId();
+  const userId = uid && uid !== "guest_user" ? uid : null;
+  let rows = [];
+
+  if (userId) {
+    try {
+      const dbRows = await dbListProgress(userId, slug);
+      if (dbRows && dbRows.length > 0) {
+        rows = dbRows;
+      }
+    } catch (_) {}
+  }
+
+  // Fusionner avec les données locales
+  const localRows = getLocalProgressList().filter((r) => r.anime_slug === slug);
+  const combined = [...rows, ...localRows];
+
   const map = {};
-  for (const row of data) {
+  for (const row of combined) {
     const k = `${row.season_id}:${row.episode_number}`;
+    const pct = Math.round(row.progress_percent || (row.duration_seconds > 0 ? (row.progress_seconds / row.duration_seconds) * 100 : 0));
+    const cur = { progressPercent: pct, completed: Boolean(row.completed) };
     const prev = map[k];
-    const cur = { progressPercent: Math.round(row.progress_percent || 0), completed: row.completed };
-    if (!prev || cur.progressPercent > prev.progressPercent) map[k] = cur;
+    if (!prev || cur.progressPercent > prev.progressPercent || (cur.completed && !prev.completed)) {
+      map[k] = cur;
+    }
   }
   return map;
 }

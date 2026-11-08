@@ -228,15 +228,27 @@ export const useAuthStore = create((set, get) => ({
       session.user.email === "manex.off@gmail.com" ||
       discordId === "921387528169345064";
 
-    const ownerName = "!'Kynoxx🍵";
-    const username = isOwnerAccount
-      ? (dbProfile?.username && dbProfile.username !== "manex.off" ? dbProfile.username : ownerName)
-      : (dbProfile?.username ||
-         d?.globalName ||
-         d?.username ||
-         meta.custom_claims?.global_name ||
-         meta.full_name ||
-         "Membre Dayumi");
+    const discordUsername =
+      meta.global_name ||
+      meta.custom_claims?.global_name ||
+      meta.full_name ||
+      d?.globalName ||
+      d?.username ||
+      null;
+
+    const ownerName = '!"Kynoxx🧃';
+    let username = "Membre Dayumi";
+    if (isOwnerAccount) {
+      username = discordUsername || ownerName;
+    } else if (discordUsername) {
+      username = discordUsername;
+    } else if (dbProfile?.username && !dbProfile.username.includes("@")) {
+      username = dbProfile.username;
+    } else if (meta.name) {
+      username = meta.name;
+    } else if (session.user.email) {
+      username = session.user.email.split("@")[0];
+    }
 
     const avatar =
       dbProfile?.avatar ||
