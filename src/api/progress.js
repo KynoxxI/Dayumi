@@ -183,8 +183,11 @@ export const COMPLETION_THRESHOLD = 90;
 
 /** @returns {{ positionSeconds, duration, progressPercent, completed }|null} */
 export async function getEpisodeProgress(slug, seasonId, episodeNumber, language, userId) {
+  const norm = (s) => String(s || "").toLowerCase().replace(/^(saison|season)[-_]?/i, "").trim();
   const key = episodeKey(slug, seasonId, episodeNumber, language);
-  const local = getLocalProgressList().find((r) => r.episode_key === key);
+  const localList = getLocalProgressList();
+  const local = localList.find((r) => r.episode_key === key) ||
+                localList.find((r) => r.anime_slug === slug && norm(r.season_id) === norm(seasonId) && Number(r.episode_number) === Number(episodeNumber));
 
   const uid = userId || getUserId();
   if (uid && uid !== "guest_user") {
@@ -192,7 +195,9 @@ export async function getEpisodeProgress(slug, seasonId, episodeNumber, language
       const dbRows = await dbListProgress(uid, slug);
       if (dbRows && dbRows.length > 0) {
         const match = dbRows.find(
-          (r) => String(r.season_id) === String(seasonId) && Number(r.episode_number) === Number(episodeNumber)
+          (r) =>
+            (String(r.season_id) === String(seasonId) || norm(r.season_id) === norm(seasonId)) &&
+            Number(r.episode_number) === Number(episodeNumber)
         );
         if (match) {
           const pos = Number(match.progress_seconds || 0);

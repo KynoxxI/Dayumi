@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { saveEpisodeProgress } from "@/api/progress";
+import { getUserId } from "@/api/dayumiDb";
 
 // Filet : les sauvegardes normales suivent les événements (pause, changement d'épisode, démontage).
 const SAVE_INTERVAL_MS = 30_000;
@@ -16,7 +17,8 @@ export function useProgressSaver(
 
   const saveProgress = useCallback(
     (time, duration, { force = false } = {}) => {
-      if (!userId || !seasonId || !Number.isFinite(epNumber) || !duration || time <= 1) return;
+      const targetUid = userId || getUserId();
+      if (!seasonId || !Number.isFinite(epNumber) || !duration || time <= 1) return;
       const now = Date.now();
       if (!force && now - lastSaveRef.current < MIN_SAVE_GAP_MS) return;
       lastSaveRef.current = now; // réarme le filet périodique
@@ -29,7 +31,7 @@ export function useProgressSaver(
         duration,
         title: animeTitle,
         cover: animeCover,
-        userId,
+        userId: targetUid !== "guest_user" ? targetUid : null,
       }).catch(() => {});
     },
     [userId, slug, seasonId, epNumber, lang, animeTitle, animeCover]

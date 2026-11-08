@@ -5,6 +5,7 @@ import { fr } from "date-fns/locale";
 import { BookOpen, History, Play, Search, X } from "lucide-react";
 import { getReadingHistory, getWatchHistory } from "@/api/history";
 import { useDisplayTitle } from "@/stores/useTitlesStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { formatSeasonId } from "@/utils/watchHistory";
 import MediaTabs from "@/components/lists/MediaTabs";
 
@@ -61,6 +62,10 @@ export default function HistoryPage() {
   const [read, setRead] = useState(null);
   const [query, setQuery] = useState("");
 
+  const user = useAuthStore((s) => s.user);
+  const session = useAuthStore((s) => s.session);
+  const authUserId = user?.id || session?.user?.id || null;
+
   useEffect(() => {
     let alive = true;
     getWatchHistory()
@@ -72,7 +77,7 @@ export default function HistoryPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [authUserId]);
 
   const source = media === "manga" ? read : watched;
   const groups = useMemo(() => {

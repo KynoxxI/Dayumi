@@ -4,14 +4,28 @@ const API_BASE = "https://anime.dayumi.site";
 
 export function getUserId() {
   try {
-    const session = useAuthStore.getState().session;
-    if (session?.user?.id) return session.user.id;
+    const state = useAuthStore.getState();
+    if (state?.user?.id) return state.user.id;
+    if (state?.session?.user?.id) return state.session.user.id;
     // Fallback: chercher dans localStorage si session temporaire
     const local = localStorage.getItem("dayumi-auth") || localStorage.getItem("nartya-auth");
     if (local) {
       const parsed = JSON.parse(local);
       const uid = parsed?.user?.id || parsed?.currentSession?.user?.id;
       if (uid) return uid;
+    }
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith("sb-") || k.includes("auth"))) {
+        const val = localStorage.getItem(k);
+        if (val && val.includes('"user"')) {
+          try {
+            const parsed = JSON.parse(val);
+            const uid = parsed?.user?.id || parsed?.currentSession?.user?.id;
+            if (uid) return uid;
+          } catch {}
+        }
+      }
     }
   } catch {}
   return "guest_user";
