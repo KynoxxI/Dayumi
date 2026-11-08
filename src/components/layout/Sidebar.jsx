@@ -8,7 +8,7 @@ import { usePlanningStore } from "@/stores/usePlanningStore";
 import { useFriendsStore } from "@/stores/useFriendsStore";
 import { useFollowedReleases } from "@/hooks/useFollowedReleases";
 import { countNewReleases } from "@/utils/planning";
-import { Fox, HalloweenFox } from "@/components/brand/NartyaMark";
+import { Fox, HalloweenFox } from "@/components/brand/DayumiMark";
 import { isHalloween } from "@/lib/season";
 import { Avatar } from "@/components/ui/Avatar";
 import { resolveAvatar } from "@/api/profile";
@@ -116,12 +116,12 @@ function Item({ to, icon: Icon, label, expanded, badge = 0, nested = false, end 
       title={!expanded ? label : undefined}
       style={nestedStyle}
       className={({ isActive }) =>
-        `group relative flex items-center rounded-md ${
-          nested ? "gap-2.5 py-1.5 pr-3 text-[0.8rem] font-normal" : "gap-3 px-[15px] py-2 text-sm font-medium transition-colors"
+        `group relative flex items-center rounded-xl transition-all ${
+          nested ? "gap-2.5 py-1.5 pr-3 text-[0.8rem] font-medium" : "gap-3 px-[15px] py-2 text-sm font-semibold"
         } ${
           isActive
-            ? "bg-primary font-bold text-primary-fg"
-            : `hover:bg-white/[0.04] hover:text-text ${nested ? "text-muted/90" : "text-muted"}`
+            ? "bg-gradient-to-r from-primary/25 via-primary/10 to-transparent text-primary border border-primary/30 shadow-[0_0_15px_rgba(249,115,22,0.2)] font-bold"
+            : `hover:bg-white/[0.05] hover:text-white ${nested ? "text-muted/80" : "text-muted"}`
         }`
       }
     >
@@ -211,12 +211,12 @@ export default function Sidebar() {
       <aside
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
-        className="absolute inset-y-0 left-0 flex flex-col overflow-hidden border-r border-border/60 bg-bg"
+        className="absolute inset-y-0 left-0 flex flex-col overflow-hidden border-r border-white/[0.08] bg-[#0c0a10]/95 backdrop-blur-2xl"
         style={{
           width: expanded ? "240px" : "64px",
           transition: `width ${TRANS}`,
           contain: "layout paint",
-          boxShadow: expanded ? "4px 0 20px rgba(0,0,0,0.25)" : "none",
+          boxShadow: expanded ? "10px 0 40px rgba(0,0,0,0.7), 0 0 30px rgba(168,85,247,0.1)" : "none",
         }}
       >
         <div className="app-drag flex h-[84px] shrink-0 items-center gap-3 px-[14px]">
@@ -328,8 +328,10 @@ export default function Sidebar() {
             to="/settings"
             title={!expanded ? "Paramètres" : undefined}
             className={({ isActive }) =>
-              `app-no-drag relative mx-2 flex items-center gap-3 rounded-md px-[15px] py-2 text-sm font-medium transition-colors ${
-                isActive ? "bg-primary font-bold text-primary-fg" : "text-muted hover:bg-white/[0.04] hover:text-text"
+              `app-no-drag relative mx-2 flex items-center gap-3 rounded-xl px-[15px] py-2 text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-gradient-to-r from-primary/25 via-primary/10 to-transparent text-primary border border-primary/30 shadow-[0_0_15px_rgba(249,115,22,0.2)] font-bold"
+                  : "text-muted hover:bg-white/[0.05] hover:text-white"
               }`
             }
           >

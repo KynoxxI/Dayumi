@@ -90,7 +90,7 @@ const FEATURES = {
 const FALLBACK = {
   icon: Lock,
   title: "Réservé aux comptes",
-  pitch: "Crée un compte gratuit pour débloquer toutes les fonctionnalités de Nartya.",
+  pitch: "Crée un compte gratuit pour débloquer toutes les fonctionnalités de Dayumi.",
   perks: ["Favoris & progression", "Listes & téléchargements", "Watch party & profil"],
 };
 

@@ -1,4 +1,4 @@
-import { Fox } from "@/components/brand/NartyaMark";
+import { Fox } from "@/components/brand/DayumiMark";
 import { useIntroPlayback } from "@/hooks/useIntroPlayback";
 import { playIntroSound } from "@/utils/introSound";
 import "./NartyaIntro.css";

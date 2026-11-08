@@ -3,13 +3,26 @@ import { isGuestSession } from "@/lib/guest";
 
 /** `sort_order` (tri manuel) quand il est posé, sinon par récence. */
 export async function listMyAnimeLists() {
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("anime_lists")
     .select(
       "anime_slug, status, anime_title, anime_cover, started_at, completed_at, updated_at, sort_order, media_type"
     )
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("updated_at", { ascending: false });
+
+  if (error && (error.message?.includes("media_type") || error.code === "42703")) {
+    const fallback = await supabase
+      .from("anime_lists")
+      .select(
+        "anime_slug, status, anime_title, anime_cover, started_at, completed_at, updated_at, sort_order"
+      )
+      .order("sort_order", { ascending: true, nullsFirst: false })
+      .order("updated_at", { ascending: false });
+    data = fallback.data;
+    error = fallback.error;
+  }
+
   if (error) throw error;
   return data || [];
 }
@@ -52,7 +65,9 @@ export async function setAnimeStatus({ slug, status, title, cover, mediaType }) 
       .from("anime_lists")
       .update({ media_type: mediaType })
       .eq("anime_slug", slug);
-    if (typeError) throw typeError;
+    if (typeError && !typeError.message?.includes("media_type") && typeError.code !== "42703") {
+      throw typeError;
+    }
   }
 }
 

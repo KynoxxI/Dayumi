@@ -5,7 +5,7 @@ import { platform } from "@/platform";
 
 /**
  * État « navigation » par défaut, sauf sur /watch et /anime qui poussent le leur. Écoute aussi
- * le deep-link nartya://anime/<slug>.
+ * le deep-link dayumi://anime/<slug>.
  */
 export default function DiscordPresence() {
   const location = useLocation();

@@ -75,7 +75,7 @@ function AccountSpace({
   const avatar =
     resolveAvatar(profile) || session?.user?.user_metadata?.avatar_url || session?.user?.user_metadata?.picture;
   const username =
-    profile?.username || session?.user?.user_metadata?.full_name || session?.user?.email || "Compte Nartya";
+    profile?.username || session?.user?.user_metadata?.full_name || session?.user?.email || "Compte Dayumi";
   const handle = profile?.handle;
   const email = session?.user?.email;
   const canLinkDiscord = !session?.user?.is_anonymous;
@@ -111,7 +111,7 @@ function AccountSpace({
                 {username}
               </h3>
               <span className="rounded-[3px] bg-primary/15 px-2 py-0.5 text-[0.56rem] font-bold uppercase tracking-[0.14em] text-primary">
-                Compte Nartya
+                Compte Dayumi
               </span>
             </div>
             <p className="mt-1 truncate text-xs text-white/60">
@@ -247,7 +247,7 @@ export default function AccountSection({ number }) {
         const manualLinkingDisabled = /manual|linking.*disabled|identity.*link/i.test(result.error);
         toast.error(
           manualLinkingDisabled
-            ? "La liaison de comptes doit d'abord être activée côté Nartya."
+            ? "La liaison de comptes doit d'abord être activée côté Dayumi."
             : result.error
         );
       } else if (result?.alreadyLinked) {
@@ -273,7 +273,7 @@ export default function AccountSection({ number }) {
     try {
       const result = await syncDiscordProfile(selection);
       if (result?.error) toast.error(result.error);
-      else toast.success("Profil Discord importé sur Nartya.");
+      else toast.success("Profil Discord importé sur Dayumi.");
     } finally {
       setDiscordSyncing(false);
     }
@@ -284,9 +284,9 @@ export default function AccountSection({ number }) {
       <Section
         id="account"
         number={number}
-        eyebrow="Identité Nartya"
+        eyebrow="Identité Dayumi"
         title="Compte"
-        description="Ton profil, ta session et les services externes bientôt reliés à Nartya."
+        description="Ton profil, ta session et les services externes bientôt reliés à Dayumi."
       >
         <AccountSpace
           profile={user}
@@ -309,7 +309,7 @@ export default function AccountSection({ number }) {
           onConfirm={handleSyncDiscord}
           onCancel={() => {
             dismissDiscordSyncOffer();
-            toast.info("Tes visuels Nartya restent inchangés.");
+            toast.info("Tes visuels Dayumi restent inchangés.");
           }}
         />
       )}

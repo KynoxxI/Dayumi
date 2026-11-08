@@ -215,7 +215,7 @@ export default function CastControls({ getMedia, getCurrentTime, onMediaFailed }
                   <p className="mb-2 text-sm text-text">Aucun appareil trouvé.</p>
                   {firewallBlocked && (
                     <p className="mb-2 rounded-md bg-primary/10 px-2 py-1.5 text-text ring-1 ring-primary/30">
-                      Le pare-feu Windows bloque Nartya. Autorise-le dans « Pare-feu Windows Defender ›
+                      Le pare-feu Windows bloque Dayumi. Autorise-le dans « Pare-feu Windows Defender ›
                       Autoriser une application ».
                     </p>
                   )}

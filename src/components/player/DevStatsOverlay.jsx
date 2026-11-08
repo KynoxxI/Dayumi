@@ -12,7 +12,7 @@ import Hls from "hls.js";
  */
 
 const FRAG_WINDOW = 12;
-const STORAGE_KEY = "nartya_dev_stats_collapsed";
+const STORAGE_KEY = "dayumi_dev_stats_collapsed";
 
 function readCollapsed() {
   try {

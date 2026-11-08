@@ -177,7 +177,7 @@ async function chooseDownloadsDir() {
       message: `Déplacer les ${itemCount} épisode(s) déjà téléchargé(s) vers le nouveau dossier ?`,
       detail:
         "« Laisser sur place » retire ces épisodes de ta bibliothèque hors ligne : leurs " +
-        "fichiers restent sur le disque mais Nartya ne les retrouvera plus.",
+        "fichiers restent sur le disque mais Dayumi ne les retrouvera plus.",
     });
     if (response === 2) return { canceled: true };
     move = response === 0;

@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 
 /** Bandeau vermillon, kanji en filigrane, un seul bouton d'action. */
 export default function NartyaNote({
-  eyebrow = "Note Nartya",
+  eyebrow = "Note Dayumi",
   title,
   actionLabel = "Compris",
   onClose,

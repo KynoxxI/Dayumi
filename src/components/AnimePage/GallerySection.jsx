@@ -49,7 +49,7 @@ function GalleryLightbox({ images, index, animeTitle, onClose, onNavigate }) {
     setDownloading(true);
     try {
       const saved = await downloadImage(image.full, fileNameFor(animeTitle, index));
-      if (saved === "gallery") toast.success("Image enregistrée dans Images › Nartya");
+      if (saved === "gallery") toast.success("Image enregistrée dans Images › Dayumi");
     } catch {
       toast.error("Téléchargement de l'image impossible");
     } finally {

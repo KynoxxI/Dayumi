@@ -49,7 +49,7 @@ export default function ProfileEditModal({ onClose }) {
   const loadProfile = useAuthStore((s) => s.loadProfile);
   const isPremium = useIsPremium();
   const tier = usePremiumTier();
-  const maxPins = pinnedLimit(user); // 12 gratuit / 30 Nartya+ / illimité Ultimate
+  const maxPins = pinnedLimit(user); // 12 gratuit / 30 Dayumi+ / illimité Ultimate
   const maxPinsLabel = maxPins === Infinity ? "∞" : maxPins;
 
   const [username, setUsernameField] = useState(user?.username || "");
@@ -142,7 +142,7 @@ export default function ProfileEditModal({ onClose }) {
     // Gif : avatar réservé aux abonnés, bannière et fond de page à Ultimate.
     const isGif = file.type === "image/gif" || /\.gif$/i.test(file.name || "");
     if (kind === "avatar" && isGif && !isPremium) {
-      toast.info("L'avatar animé (gif) est réservé aux abonnés Nartya + / Ultimate.");
+      toast.info("L'avatar animé (gif) est réservé aux abonnés Dayumi + / Ultimate.");
       return;
     }
     if ((kind === "banner" || kind === "background") && isGif && tier !== "ultimate") {

@@ -44,6 +44,7 @@ export function resolveBanner(profile) {
   const path = profile?.banner;
   if (!path) return null;
   if (isGifPath(path) && premiumTier(profile) !== "ultimate") return null;
+  if (/^https?:\/\//i.test(path)) return path;
   return publicImageUrl(BANNER_BUCKET, path);
 }
 
@@ -52,6 +53,7 @@ export function resolvePageBackground(profile) {
   const path = profile?.page_background;
   if (!path) return null;
   if (isGifPath(path) && premiumTier(profile) !== "ultimate") return null;
+  if (/^https?:\/\//i.test(path)) return path;
   return publicImageUrl(BACKGROUND_BUCKET, path);
 }
 
@@ -189,18 +191,46 @@ export async function recordProfileView(handle) {
 
 /** Staff, admin, développeur. Réservé aux comptes connectés. */
 export async function getTeamRoster() {
-  const { data, error } = await supabase.rpc("get_team_roster");
-  if (error) throw error;
-  return (data || []).map((r) => ({
-    id: r.id,
-    handle: r.handle,
-    username: r.username,
-    avatar: r.avatar,
-    avatar_custom: r.avatarCustom,
-    bio: r.bio,
-    role: r.role,
-    createdAt: r.createdAt,
-  }));
+  const kynoxx = {
+    id: "0a0a9e1d-36a7-4676-b0ac-9bc707fc5b47",
+    handle: "kynoxx052",
+    username: "!\"Kynoxx 🧃",
+    avatar: "https://cdn.discordapp.com/avatars/921387528169345064/a_5e7fd1d57694a71edbc751d8a9745277.gif",
+    avatar_custom: null,
+    bio: "Fondateur et créateur de Dayumi. Gère le développement, l'infrastructure et la communauté.",
+    role: "owner",
+    createdAt: "2026-10-27T01:34:11.573983Z",
+  };
+
+  try {
+    const res = await fetch("https://dayumi.site/fn/team-roster").catch(() => null);
+    if (res && res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json?.data) && json.data.length > 0) return json.data;
+    }
+  } catch (_) {}
+
+  try {
+    const { data, error } = await supabase.rpc("get_team_roster");
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const roster = data.map((r) => ({
+        id: r.id,
+        handle: r.handle,
+        username: r.username,
+        avatar: r.avatar,
+        avatar_custom: r.avatarCustom,
+        bio: r.bio,
+        role: r.role,
+        createdAt: r.createdAt,
+      }));
+      if (!roster.some((m) => m.id === kynoxx.id || m.handle === kynoxx.handle)) {
+        roster.unshift(kynoxx);
+      }
+      return roster;
+    }
+  } catch (_) {}
+
+  return [kynoxx];
 }
 
 /** [] si le membre masque sa liste. */

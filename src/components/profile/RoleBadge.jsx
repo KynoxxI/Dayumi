@@ -1,10 +1,15 @@
-import { Shield, ShieldCheck, Code2 } from "lucide-react";
+import { Shield, ShieldCheck, Code2, FlaskConical } from "lucide-react";
 
 // Figé : le badge ne suit pas le `--primary` d'un thème de profil.
 const VERMILLION = "255 113 62";
 
 /** `user` est masqué sauf `showMember`. */
 const STYLES = {
+  owner: {
+    label: "Fondateur",
+    icon: Shield,
+    className: "border-amber-400/40 bg-amber-400/15 text-amber-300",
+  },
   developer: {
     label: "Développeur",
     icon: Code2,
@@ -20,10 +25,40 @@ const STYLES = {
       borderColor: `rgb(${VERMILLION} / 0.35)`,
     },
   },
+  smod: {
+    label: "Super Modo",
+    icon: ShieldCheck,
+    className: "border-purple-400/35 bg-purple-400/15 text-purple-300",
+  },
+  modo: {
+    label: "Modérateur",
+    icon: ShieldCheck,
+    className: "border-violet-400/30 bg-violet-400/10 text-violet-300",
+  },
+  helper: {
+    label: "Helper",
+    icon: ShieldCheck,
+    className: "border-sky-400/25 bg-sky-400/10 text-sky-300",
+  },
   staff: {
     label: "Staff",
     icon: ShieldCheck,
     className: "border-sky-400/25 bg-sky-400/10 text-sky-300",
+  },
+  beta_tester: {
+    label: "Bêta Testeur",
+    icon: FlaskConical,
+    className: "border-cyan-400/40 bg-cyan-400/15 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]",
+  },
+  beta: {
+    label: "Bêta Testeur",
+    icon: FlaskConical,
+    className: "border-cyan-400/40 bg-cyan-400/15 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]",
+  },
+  tester: {
+    label: "Bêta Testeur",
+    icon: FlaskConical,
+    className: "border-cyan-400/40 bg-cyan-400/15 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]",
   },
   user: {
     label: "Membre",

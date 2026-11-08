@@ -131,7 +131,7 @@ export default function Anime4kWarningModal({ mode, sourceWidth, sourceHeight, o
               <Cpu size={16} />
             </span>
             <div>
-              <p className="text-xs font-semibold text-text">Minimum conseillé par Nartya</p>
+              <p className="text-xs font-semibold text-text">Minimum conseillé par Dayumi</p>
               <p className="mt-0.5 text-xs text-muted">
                 GTX 1060, RX 580 ou Apple M1 — avec 8 Go de RAM
               </p>

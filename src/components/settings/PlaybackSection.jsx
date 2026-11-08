@@ -53,7 +53,7 @@ export default function PlaybackSection({ number }) {
   const autoSkip = useSettingsStore((s) => s.autoSkip);
   const skipButtonEnabled = useSettingsStore((s) => s.skipButtonEnabled);
   const autoSkipOpEd = useSettingsStore((s) => s.autoSkipOpEd);
-  const nartyaIntro = useSettingsStore((s) => s.nartyaIntro);
+  const dayumiIntro = useSettingsStore((s) => s.dayumiIntro);
   const achievementsInPlayback = useSettingsStore((s) => s.achievementsInPlayback);
   const resumeLimit = useSettingsStore((s) => s.resumeLimit);
   const liteMode = useSettingsStore((s) => s.liteMode);
@@ -91,7 +91,7 @@ export default function PlaybackSection({ number }) {
         icon={Radio}
         label="Source prioritaire"
         description="Hébergeur essayé en premier lors de la lecture."
-        details="Si cette source échoue, Nartya essaie automatiquement les autres hébergeurs disponibles."
+        details="Si cette source échoue, Dayumi essaie automatiquement les autres hébergeurs disponibles."
       >
         <Select
           title="Source prioritaire"
@@ -127,7 +127,7 @@ export default function PlaybackSection({ number }) {
         icon={MonitorPlay}
         label="Qualité de lecture"
         description="Qualité maximale utilisée pendant le streaming."
-        details="En mode automatique, Nartya adapte la qualité au débit. Une limite plus basse peut réduire les coupures et soulager les machines modestes."
+        details="En mode automatique, Dayumi adapte la qualité au débit. Une limite plus basse peut réduire les coupures et soulager les machines modestes."
       >
         <Select
           title="Qualité de lecture"
@@ -144,7 +144,7 @@ export default function PlaybackSection({ number }) {
           icon={Sparkles}
           label="Qualité source Anime4K"
           description="Qualité vidéo utilisée comme source pour l'upscale Anime4K."
-          details="Anime4K verrouille cette qualité pendant la lecture. Si elle n'est pas disponible, Nartya choisit la meilleure variante inférieure."
+          details="Anime4K verrouille cette qualité pendant la lecture. Si elle n'est pas disponible, Dayumi choisit la meilleure variante inférieure."
         >
           <Select
             title="Qualité source Anime4K"
@@ -217,15 +217,15 @@ export default function PlaybackSection({ number }) {
 
       <SettingRow
         icon={Clapperboard}
-        label="Intro Nartya"
-        description="Courte animation Nartya à l'ouverture de l'app."
+        label="Intro Dayumi"
+        description="Courte animation Dayumi à l'ouverture de l'app."
         details="Jouée pendant que l'app se charge. Passable d'un clic ou avec Échap."
         inlineControl
       >
         <Toggle
-          label="Intro Nartya"
-          checked={nartyaIntro}
-          onChange={(v) => setSetting("nartyaIntro", v)}
+          label="Intro Dayumi"
+          checked={dayumiIntro}
+          onChange={(v) => setSetting("dayumiIntro", v)}
         />
       </SettingRow>
 

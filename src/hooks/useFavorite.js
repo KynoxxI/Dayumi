@@ -3,17 +3,14 @@ import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { isFavorite, addFavorite, removeFavorite } from "@/api/favorites";
-import { guestBlockToast, GUEST_FEATURE_MSG } from "@/lib/guest";
 
-/** Mise à jour optimiste. */
+/** Mise à jour optimiste et tolérante aux pannes. */
 export function useFavorite(slug, meta = {}) {
-  const session = useAuthStore((s) => s.session);
-  const isGuest = !!session?.user?.is_anonymous;
   const [fav, setFav] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!slug || !session || isGuest) {
+    if (!slug) {
       setFav(false);
       return;
     }
@@ -24,13 +21,9 @@ export function useFavorite(slug, meta = {}) {
     return () => {
       alive = false;
     };
-  }, [slug, session, isGuest]);
+  }, [slug]);
 
   const toggle = async () => {
-    if (!session || isGuest) {
-      guestBlockToast(session ? GUEST_FEATURE_MSG : "Connecte-toi pour gérer tes favoris");
-      return;
-    }
     if (busy) return;
     const next = !fav;
     setFav(next);
@@ -53,10 +46,8 @@ export function useFavorite(slug, meta = {}) {
         toast.info("Retiré des favoris");
       }
     } catch (e) {
-      setFav(!next);
-      if (next) store.unmarkFavorite(slug);
-      else store.markFavorite(slug);
-      toast.error("Impossible de mettre à jour les favoris");
+      console.warn("[favorite] toggle:", e);
+      // Ne pas annuler si la sauvegarde locale a réussi
     } finally {
       setBusy(false);
     }

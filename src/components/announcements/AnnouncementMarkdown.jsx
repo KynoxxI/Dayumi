@@ -78,7 +78,7 @@ function remarkDiscordExtras() {
 }
 
 function safeHref(href) {
-  return typeof href === "string" && /^(https?:\/\/|nartya:\/\/)/i.test(href) ? href : null;
+  return typeof href === "string" && /^(https?:\/\/|dayumi:\/\/)/i.test(href) ? href : null;
 }
 
 function Spoiler({ children }) {

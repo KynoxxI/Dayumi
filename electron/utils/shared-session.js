@@ -103,26 +103,77 @@ function parseStoredAccessToken(raw) {
   }
 }
 
+let _refreshing = false;
+async function refreshSharedSession(authObj) {
+  if (_refreshing || !authObj?.refresh_token) return;
+  _refreshing = true;
+  try {
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVodWVwdXdyY2pjaXdmc2ZvZXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0OTI1NTIsImV4cCI6MjEwOTA2ODU1Mn0.SQdqYeZvhEgyvG9Nwufon2hqDZ4v-CVJCeLJY9dDaAo';
+    const res = await fetch('https://uhuepuwrcjciwfsfoetn.supabase.co/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: authObj.refresh_token }),
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.access_token) {
+      const updated = {
+        ...authObj,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
+        expires_in: data.expires_in
+      };
+      const raw = JSON.stringify(updated);
+      setItem("nartya-auth", raw);
+      setItem("dayumi-auth", raw);
+      console.log("[shared-session] Jeton de session rafraîchi avec succès.");
+    }
+  } catch (e) {
+    console.warn("[shared-session] Erreur refresh session:", e?.message || e);
+  } finally {
+    _refreshing = false;
+  }
+}
+
 /**
  * Lu dans le fichier partagé, pas reçu du renderer : un renderer compromis ne peut pas en
  * imposer un autre.
  */
 export function getSharedAccessToken() {
-  return parseStoredAccessToken(getItem("nartya-auth"));
+  const raw = getItem("nartya-auth") || getItem("dayumi-auth");
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const session = parsed?.currentSession ?? parsed;
+    if (session?.expires_at && session.expires_at - Math.floor(Date.now() / 1000) < 300) {
+      refreshSharedSession(session).catch(() => {});
+    }
+  } catch (_) {}
+  return parseStoredAccessToken(raw);
 }
 
 function setItem(key, value) {
   const all = readAll();
+  if ((key === "nartya-auth" || key === "dayumi-auth") && typeof value === "string" && value.includes("dayumi-local-token")) {
+    const existing = all[key] || all["nartya-auth"] || all["dayumi-auth"];
+    if (existing && typeof existing === "string" && existing.includes('"access_token":"eyJ')) {
+      console.log("[shared-session] BLOCKED overwrite of real Supabase token by dummy local token!");
+      return;
+    }
+  }
   all[key] = value;
+  if (key === "dayumi-auth") all["nartya-auth"] = value;
+  if (key === "nartya-auth") all["dayumi-auth"] = value;
   writeAll(all);
 }
 
 function removeItem(key) {
   const all = readAll();
-  if (key in all) {
-    delete all[key];
-    writeAll(all);
-  }
+  delete all[key];
+  if (key === "dayumi-auth") delete all["nartya-auth"];
+  if (key === "nartya-auth") delete all["dayumi-auth"];
+  writeAll(all);
 }
 
 /**

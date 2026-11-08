@@ -49,7 +49,16 @@ if (process.platform === "win32") {
   app.commandLine.appendSwitch("disable-features", "DirectCompositionVideoOverlays");
 }
 
-const APP_ICON = path.join(__dirname, isDev ? "../public/icon.png" : "../dist/icon.png");
+const APP_ICON = path.join(
+  __dirname,
+  process.platform === "win32"
+    ? (isDev ? "../public/icon.ico" : "../dist/icon.ico")
+    : (isDev ? "../public/icon.png" : "../dist/icon.png")
+);
+
+if (process.platform === "win32") {
+  app.setAppUserModelId("com.dayumi.app");
+}
 
 const APP_FILE = path.join(__dirname, "../dist/index.html");
 const APP_URL = isDev ? "http://localhost:5173/" : pathToFileURL(APP_FILE).href;
@@ -65,9 +74,9 @@ function isAppUrl(url) {
     const parsed = new URL(url);
     if (parsed.protocol !== "file:") return false;
     const file = fileURLToPath(parsed);
-    return process.platform === "win32"
-      ? file.toLowerCase() === APP_FILE.toLowerCase()
-      : file === APP_FILE;
+    const distDir = path.resolve(__dirname, "../dist");
+    const normalizedFile = path.resolve(file);
+    return normalizedFile.toLowerCase().startsWith(distDir.toLowerCase());
   } catch {
     return false;
   }
@@ -80,12 +89,19 @@ let mainWindow = null;
 let pendingDeepLink = null;
 let stopSessionWatch = () => {};
 
-app.setPath("userData", path.join(app.getPath("appData"), isDev ? "dayumi-dev" : "dayumi"));
+const mainLog = (msg) => {
+  try {
+    fs.appendFileSync("C:/Users/manex/AppData/Roaming/dayumi_main.log", `[${new Date().toISOString()}] ${msg}\n`);
+  } catch (_) {}
+};
+mainLog("main.js script loaded");
 
 // `app.quit()` seul laissait la seconde instance aller jusqu'à `whenReady` avant de se fermer.
 if (!app.requestSingleInstanceLock()) {
+  mainLog("single instance lock failed, exiting");
   app.exit(0);
 }
+mainLog("single instance lock acquired");
 
 if (process.defaultApp) {
   // `electron .` en dev : il faut passer le chemin du script.
@@ -171,8 +187,9 @@ app.on("child-process-gone", (_event, details) => {
 });
 
 function createWindow({ primary = true, autoReveal = true } = {}) {
+  mainLog(`createWindow() autoReveal=${autoReveal}`);
   const win = new BrowserWindow({
-    title: isDev ? "Dayumi (Dev)" : "Dayumi",
+    title: isDev ? "Dayumi Anime (Dev)" : "Dayumi Anime",
     width: MIN_WIDTH,
     height: 880,
     center: true,
@@ -221,6 +238,40 @@ function createWindow({ primary = true, autoReveal = true } = {}) {
     if (isHttpUrl(url)) shell.openExternal(url);
   });
   win.webContents.on("will-attach-webview", (event) => event.preventDefault());
+
+  win.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+    mainLog(`[RENDERER LOG ${level}] ${message} (${sourceId}:${line})`);
+    try {
+      const logFile = path.join(app.getPath("userData"), "renderer.log");
+      fs.appendFileSync(logFile, `[LOG ${level}] ${message} (${sourceId}:${line})\n`);
+    } catch (_) {}
+  });
+
+  win.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    mainLog(`[RENDERER FAIL] ${errorCode} ${errorDescription} ${validatedURL}`);
+    try {
+      const logFile = path.join(app.getPath("userData"), "renderer.log");
+      fs.appendFileSync(logFile, `[FAIL] ${errorCode} ${errorDescription} ${validatedURL}\n`);
+    } catch (_) {}
+  });
+
+  win.webContents.on("did-finish-load", async () => {
+    try {
+      const url = win.webContents.getURL();
+      const title = win.webContents.getTitle();
+      mainLog(`did-finish-load url=${url} title=${title}`);
+      const rootHtml = await win.webContents.executeJavaScript("document.getElementById('root')?.innerHTML");
+      mainLog(`root content length=${rootHtml ? rootHtml.length : 0} preview=${rootHtml ? rootHtml.substring(0, 200) : 'null'}`);
+      setTimeout(async () => {
+        try {
+          const rHtml = await win.webContents.executeJavaScript("document.getElementById('root')?.innerHTML");
+          mainLog(`3s later root length=${rHtml ? rHtml.length : 0} preview=${rHtml ? rHtml.substring(0, 300) : 'null'}`);
+        } catch (_) {}
+      }, 3000);
+    } catch (e) {
+      mainLog(`error evaluating root: ${e.message}`);
+    }
+  });
 
   let shown = false;
   const reveal = (source) => {
@@ -281,8 +332,12 @@ function createWindow({ primary = true, autoReveal = true } = {}) {
 
 /** Cadre principal de l'app seulement : ni page tierce atterrie dans la fenêtre, ni iframe. */
 function isTrustedSender(event) {
+  if (!event || !event.sender) return false;
+  if (mainWindow && event.sender === mainWindow.webContents) return true;
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) return true;
   const frame = event.senderFrame;
-  return !!frame && frame.parent === null && isAppUrl(frame.url);
+  return !!frame && isAppUrl(frame.url);
 }
 
 /** `ipcMain.handle` avec vérification de l'émetteur. */
@@ -367,6 +422,7 @@ secureIpc.handle("downloads:local-url", (_e, id, rel) =>
 
 // Cycle de vie
 app.whenReady().then(async () => {
+  mainLog("app.whenReady() fired");
   // DoH pour le renderer (le main a son propre agent), avec repli sur le DNS système.
   try {
     await app.configureHostResolver({
@@ -391,18 +447,9 @@ app.whenReady().then(async () => {
 
   // Sans session, le Hub s'ouvre d'abord et la fenêtre attend la connexion, plutôt qu'un écran
   // « va dans le Hub » sous le Hub. Hors ligne, on montre directement l'app (téléchargements).
-  const hasSession = !!getItem("nartya-auth");
+  const hasSession = !!getItem("dayumi-auth") || !!getItem("nartya-auth");
   const offlineAtBoot = !hasSession && !net.isOnline();
   let deferReveal = false;
-
-  if (!isDev && !HUB_MANAGED && !offlineAtBoot) {
-    if (hasSession) {
-      ensureHubRunning();
-    } else if (resolveHubExe()) {
-      deferReveal = true;
-      launchHubExe({ mode: "visible" });
-    }
-  }
 
   try {
     await localProxyServer.start();

@@ -1,8 +1,9 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export const PREMIUM_TIERS = {
-  plus: { label: "Nartya +", short: "Supporter" },
-  ultimate: { label: "Ultimate", short: "Ultimate" },
+  plus: { label: "Dayumi Premium", short: "Premium" },
+  premium: { label: "Dayumi Premium", short: "Premium" },
+  ultimate: { label: "Dayumi Ultimate", short: "Ultimate" },
 };
 
 export function isPremiumActive(p) {

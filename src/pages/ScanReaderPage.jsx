@@ -27,8 +27,8 @@ import { toast } from "@/lib/toast";
 import { GUEST_FEATURE_MSG } from "@/lib/guest";
 
 const SAVE_DEBOUNCE_MS = 1500;
-const MODE_KEY = "nartya_scan_mode";
-const RTL_KEY = "nartya_scan_rtl";
+const MODE_KEY = "dayumi_scan_mode";
+const RTL_KEY = "dayumi_scan_rtl";
 
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 4;

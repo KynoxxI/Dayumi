@@ -13,7 +13,6 @@ export const useFavoritesStore = create((set, get) => ({
 
   ensureLoaded() {
     if (get().loaded || inflight) return;
-    if (!useAuthStore.getState().session || isGuestSession()) return;
     inflight = listFavorites()
       .then((rows) => set({ slugs: new Set(rows.map((r) => r.anime_slug)), loaded: true }))
       .catch(() => {})

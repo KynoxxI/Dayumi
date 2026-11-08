@@ -1,18 +1,23 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useNetworkStore } from "@/stores/useNetworkStore";
-import GuestGate from "@/components/GuestGate";
+import { platform } from "@/platform";
 
-/**
- * Hors ligne sans session, pas de renvoi vers /login : la connexion exige le réseau, et les
- * téléchargements deviendraient inaccessibles.
- */
-export default function ProtectedRoute({ children, requireAccount = false, feature }) {
+export default function ProtectedRoute({ children, requireAccount = false }) {
   const session = useAuthStore((s) => s.session);
-  const isGuest = !!session?.user?.is_anonymous;
-  const offline = useNetworkStore((s) => s.checked && !s.online);
+  const loading = useAuthStore((s) => s.loading);
+  const location = useLocation();
 
-  if (!session && !offline) return <Navigate to="/login" replace />;
-  if (requireAccount && isGuest) return <GuestGate feature={feature} />;
+  if (loading) return null;
+
+  // Sur desktop (Electron), la connexion est obligatoire : si aucune session, redirection vers /login
+  if (platform.isElectron && !session) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Pour les pages nécessitant un compte non anonyme
+  if (requireAccount && (!session || session.user?.is_anonymous)) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
   return children;
 }

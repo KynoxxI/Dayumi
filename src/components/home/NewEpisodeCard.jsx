@@ -44,8 +44,8 @@ export default function NewEpisodeCard({ anime }) {
   };
 
   return (
-    <div className="group w-full text-left">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-surface-2">
+    <div className="group w-full text-left transition-all duration-300 hover:-translate-y-1">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-surface-2 border border-white/[0.08] shadow-[0_8px_20px_rgba(0,0,0,0.5)] group-hover:border-primary/50 group-hover:shadow-[0_12px_32px_rgba(249,115,22,0.22)] transition-all duration-300">
         {anime.cover ? (
           <img
             src={anime.cover}
@@ -66,21 +66,21 @@ export default function NewEpisodeCard({ anime }) {
         />
 
         {/* Ne doit pas intercepter le clic. */}
-        <div className="pointer-events-none absolute inset-0 hidden bg-black/0 transition-colors duration-200 group-hover:bg-black/45 md:block" />
+        <div className="pointer-events-none absolute inset-0 hidden bg-black/0 transition-colors duration-200 group-hover:bg-black/50 md:block backdrop-blur-[2px]" />
 
         {canPlay && (
           <button
             onClick={play}
             title={`Lire l'épisode ${episode}${lang ? ` (${getLanguageLabel(lang)})` : ""}`}
             aria-label={`Lire l'épisode ${episode} de ${anime.title}`}
-            className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-fg shadow-lg transition-[opacity,transform] hover:scale-105 active:scale-95 md:opacity-0 md:group-hover:opacity-100"
+            className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-amber-500 text-white shadow-[0_0_25px_rgba(249,115,22,0.65)] transition-all duration-200 hover:scale-110 active:scale-95 md:opacity-0 md:group-hover:opacity-100"
           >
             <Play size={18} className="ml-0.5 fill-current" />
           </button>
         )}
 
         {badge && (
-          <span className="pointer-events-none absolute left-1.5 top-1.5 rounded bg-primary/90 px-1.5 py-0.5 text-[0.68rem] font-bold text-primary-fg backdrop-blur-sm">
+          <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-xl bg-black/80 px-2.5 py-1 text-[0.7rem] font-['Outfit'] font-bold text-primary border border-primary/30 backdrop-blur-md shadow-md">
             {badge}
           </span>
         )}

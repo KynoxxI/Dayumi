@@ -6,7 +6,7 @@
  */
 export const SITE_URL = "https://dayumi.site";
 export const SITE_HOST = new URL(SITE_URL).host;
-export const API_URL = "https://anime.dayumi.site";
+export const API_URL = "https://dayumi.site";
 export const DISCORD_INVITE = "https://discord.gg/EtHUwUhEvF";
 export const CONTACT_EMAIL = "contact@dayumi.site";
 // Clé publique Cloudflare Turnstile, liée aux domaines du site.

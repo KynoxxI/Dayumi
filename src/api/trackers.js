@@ -57,13 +57,13 @@ export async function unlinkTracker(provider) {
   if (error) throw error;
 }
 
-/** Ajoute à Nartya ce qui n'y est pas encore : listes et notes. Rien n'est écrasé. */
+/** Ajoute à Dayumi ce qui n'y est pas encore : listes et notes. Rien n'est écrasé. */
 export async function importTrackerList(provider) {
   const { error } = await postFn(`/v1/me/trackers/${provider}/import`);
   if (error) throw new Error(error.message);
 }
 
-/** Envoie tout l'historique Nartya vers les comptes liés. Renvoie le nombre d'envois en file. */
+/** Envoie tout l'historique Dayumi vers les comptes liés. Renvoie le nombre d'envois en file. */
 export async function exportToTrackers() {
   const { data, error } = await supabase.rpc("tracker_export_all");
   if (error) throw error;

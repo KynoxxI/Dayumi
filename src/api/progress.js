@@ -1,6 +1,27 @@
 import { supabase } from "@/lib/supabase";
 import { isGuestSession } from "@/lib/guest";
 import { expireCache } from "@/hooks/useCachedResource";
+import { dbListProgress, dbSaveProgress, getUserId } from "./dayumiDb";
+
+const LOCAL_PROGRESS_KEY = "dayumi_local_progress";
+
+function getLocalProgressList() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_PROGRESS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalProgressItem(item) {
+  try {
+    let list = getLocalProgressList();
+    list = list.filter((x) => x.episode_key !== item.episode_key);
+    list.unshift(item);
+    if (list.length > 200) list = list.slice(0, 200);
+    localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(list));
+  } catch {}
+}
 
 function expireProfileProgress(userId = "") {
   expireCache(userId ? `profile:stats:${userId}` : "profile:stats:");
@@ -17,27 +38,57 @@ function invalidateResumeCache() {
 }
 
 async function getResumeRows() {
-  const { data: authData } = await supabase.auth.getSession();
-  const userId = authData?.session?.user?.id || null;
+  const uid = getUserId();
+  const userId = uid && uid !== "guest_user" ? uid : null;
   const now = Date.now();
   if (resumeCache.userId === userId && resumeCache.rows && now - resumeCache.ts < RESUME_CACHE_MS) {
     return resumeCache.rows;
   }
   if (resumeCache.userId === userId && resumeCache.promise) return resumeCache.promise;
 
-  const request = supabase
-    .from("episode_progress")
-    .select(
-      "episode_key, anime_slug, anime_title, anime_cover, season_id, episode_number, language, position_seconds, duration, progress_percent, completed, updated_at"
-    )
-    .eq("hidden_from_resume", false)
-    .order("updated_at", { ascending: false })
-    .limit(RESUME_QUERY_LIMIT)
-    .then(({ data, error }) => {
-      const rows = error || !data ? [] : data;
+  const localRows = getLocalProgressList().filter((r) => !r.hidden_from_resume);
+
+  const request = (async () => {
+    try {
+      let remote = [];
+      if (userId) {
+        const dbRows = await dbListProgress(userId);
+        remote = (dbRows || []).map((r) => ({
+          episode_key: `${r.anime_slug}:${r.season_id}:${r.episode_number}:${r.language || "VOSTFR"}`,
+          anime_slug: r.anime_slug,
+          anime_title: r.title || r.anime_slug,
+          anime_cover: r.cover || null,
+          season_id: String(r.season_id),
+          episode_number: Number(r.episode_number),
+          language: r.language || "VOSTFR",
+          position_seconds: Number(r.progress_seconds || 0),
+          duration: Number(r.duration_seconds || 0),
+          progress_percent: r.duration_seconds > 0 ? (r.progress_seconds / r.duration_seconds) * 100 : 0,
+          completed: Boolean(r.completed),
+          updated_at: r.updated_at,
+        }));
+      }
+
+      // Fusionner les données locales et distantes
+      const map = new Map();
+      localRows.forEach((r) => map.set(r.episode_key, r));
+      remote.forEach((r) => {
+        const existing = map.get(r.episode_key);
+        if (!existing || new Date(r.updated_at) >= new Date(existing.updated_at)) {
+          map.set(r.episode_key, r);
+        }
+      });
+      const rows = Array.from(map.values()).sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
       resumeCache = { userId, rows, ts: Date.now(), promise: null };
       return rows;
-    });
+    } catch (_) {
+      resumeCache = { userId, rows: localRows, ts: Date.now(), promise: null };
+      return localRows;
+    }
+  })();
+
   resumeCache = { userId, rows: null, ts: 0, promise: request };
   return request;
 }
@@ -132,22 +183,56 @@ export const COMPLETION_THRESHOLD = 90;
 
 /** @returns {{ positionSeconds, duration, progressPercent, completed }|null} */
 export async function getEpisodeProgress(slug, seasonId, episodeNumber, language, userId) {
-  if (!userId) return null;
-
   const key = episodeKey(slug, seasonId, episodeNumber, language);
-  const { data, error } = await supabase
-    .from("episode_progress")
-    .select("position_seconds, duration, progress_percent, completed")
-    .eq("user_id", userId)
-    .eq("episode_key", key)
-    .maybeSingle();
-  if (error || !data) return null;
-  return {
-    positionSeconds: data.position_seconds || 0,
-    duration: data.duration || 0,
-    progressPercent: data.progress_percent || 0,
-    completed: data.completed || false,
-  };
+  const local = getLocalProgressList().find((r) => r.episode_key === key);
+
+  if (!userId) {
+    if (local) {
+      return {
+        positionSeconds: local.position_seconds || 0,
+        duration: local.duration || 0,
+        progressPercent: local.progress_percent || 0,
+        completed: local.completed || false,
+      };
+    }
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("episode_progress")
+      .select("position_seconds, duration, progress_percent, completed")
+      .eq("user_id", userId)
+      .eq("episode_key", key)
+      .maybeSingle();
+    if (error || !data) {
+      if (local) {
+        return {
+          positionSeconds: local.position_seconds || 0,
+          duration: local.duration || 0,
+          progressPercent: local.progress_percent || 0,
+          completed: local.completed || false,
+        };
+      }
+      return null;
+    }
+    return {
+      positionSeconds: data.position_seconds || 0,
+      duration: data.duration || 0,
+      progressPercent: data.progress_percent || 0,
+      completed: data.completed || false,
+    };
+  } catch (_) {
+    if (local) {
+      return {
+        positionSeconds: local.position_seconds || 0,
+        duration: local.duration || 0,
+        progressPercent: local.progress_percent || 0,
+        completed: local.completed || false,
+      };
+    }
+    return null;
+  }
 }
 
 /** @param {string} [p.title] titre de l'anime, pour « Reprendre » */
@@ -162,46 +247,59 @@ export async function saveEpisodeProgress({
   cover = null,
   userId,
 }) {
-  if (!userId || isGuestSession()) return;
-
   const pct = duration > 0 ? Math.min((positionSeconds / duration) * 100, 100) : 0;
   const completed = pct >= COMPLETION_THRESHOLD;
+  const key = episodeKey(slug, seasonId, episodeNumber, language);
 
-  const { error } = await supabase.from("episode_progress").upsert(
-    {
-      user_id: userId,
-      episode_key: episodeKey(slug, seasonId, episodeNumber, language),
-      anime_slug: slug,
-      anime_title: cleanTitle(title),
-      anime_cover: cover,
-      season_id: String(seasonId),
-      episode_number: storedEpisodeNumber(episodeNumber),
-      language,
-      position_seconds: positionSeconds,
-      duration,
-      progress_percent: pct,
+  // 1. Sauvegarde locale garantie
+  saveLocalProgressItem({
+    episode_key: key,
+    anime_slug: slug,
+    anime_title: cleanTitle(title),
+    anime_cover: cover,
+    season_id: String(seasonId),
+    episode_number: storedEpisodeNumber(episodeNumber),
+    language,
+    position_seconds: positionSeconds,
+    duration,
+    progress_percent: pct,
+    completed,
+    hidden_from_resume: false,
+    updated_at: new Date().toISOString(),
+  });
+  invalidateResumeCache();
+
+  // 2. Synchronisation BDD Dayumi MariaDB
+  const uid = userId || getUserId();
+  if (uid && uid !== "guest_user") {
+    dbSaveProgress({
+      userId: uid,
+      animeSlug: slug,
+      seasonId,
+      episodeNumber,
+      progressSeconds: positionSeconds,
+      durationSeconds: duration,
       completed,
-      hidden_from_resume: false, // re-regarder réaffiche l'anime dans « Reprendre »
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,episode_key" }
-  );
-  if (error) console.warn("[progress] save échouée:", error.message);
-  else {
-    expireProfileProgress(userId);
-    invalidateResumeCache();
+      language,
+    }).catch(() => {});
   }
 }
 
 /** Sans toucher à l'historique. */
 export async function hideAnimeFromResume(slug) {
+  const list = getLocalProgressList().map((item) =>
+    item.anime_slug === slug ? { ...item, hidden_from_resume: true } : item
+  );
+  localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(list));
+  invalidateResumeCache();
+
   if (!slug || isGuestSession()) return;
-  const { error } = await supabase
-    .from("episode_progress")
-    .update({ hidden_from_resume: true })
-    .eq("anime_slug", slug);
-  if (error) console.warn("[progress] hide resume échouée:", error.message);
-  else invalidateResumeCache();
+  try {
+    await supabase
+      .from("episode_progress")
+      .update({ hidden_from_resume: true })
+      .eq("anime_slug", slug);
+  } catch (_) {}
 }
 
 export async function markEpisodeWatched({ slug, seasonId, episodeNumber, language, title, cover, userId }) {
@@ -337,23 +435,58 @@ export async function getContinueWatching(limit = 12) {
 }
 
 export async function getLastWatched(slug, userId) {
-  if (!userId || !slug) return null;
-  const { data, error } = await supabase
-    .from("episode_progress")
-    .select("season_id, episode_number, language, progress_percent, completed, updated_at")
-    .eq("user_id", userId)
-    .eq("anime_slug", slug)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error || !data) return null;
-  return {
-    seasonId: data.season_id,
-    episodeNumber: data.episode_number,
-    language: data.language,
-    progressPercent: Math.round(data.progress_percent || 0),
-    completed: data.completed,
-  };
+  if (!slug) return null;
+  const local = getLocalProgressList()
+    .filter((r) => r.anime_slug === slug)
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+
+  if (!userId) {
+    if (local) {
+      return {
+        seasonId: local.season_id,
+        episodeNumber: local.episode_number,
+        language: local.language,
+        progressPercent: Math.round(local.progress_percent || 0),
+        completed: local.completed,
+      };
+    }
+    return null;
+  }
+
+  try {
+    const dbRows = await dbListProgress(userId, slug);
+    if (dbRows && dbRows.length > 0) {
+      const best = dbRows[0];
+      return {
+        seasonId: String(best.season_id),
+        episodeNumber: Number(best.episode_number),
+        language: best.language || "VOSTFR",
+        progressPercent: best.duration_seconds > 0 ? Math.round((best.progress_seconds / best.duration_seconds) * 100) : 0,
+        completed: Boolean(best.completed),
+      };
+    }
+    if (local) {
+      return {
+        seasonId: local.season_id,
+        episodeNumber: local.episode_number,
+        language: local.language,
+        progressPercent: Math.round(local.progress_percent || 0),
+        completed: local.completed,
+      };
+    }
+    return null;
+  } catch (_) {
+    if (local) {
+      return {
+        seasonId: local.season_id,
+        episodeNumber: local.episode_number,
+        language: local.language,
+        progressPercent: Math.round(local.progress_percent || 0),
+        completed: local.completed,
+      };
+    }
+    return null;
+  }
 }
 
 /** `slug → { lastEpisode, lastSeasonId, lastUpdatedAt, lastPercent, lastCompleted, watchedCount }` */

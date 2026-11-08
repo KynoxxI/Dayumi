@@ -257,35 +257,35 @@ export default function VideoPlayer({
     // Indicateur de saut (« +10s », cumulatif)
     const seekHud = (() => {
       const host = art.template?.$player || containerRef.current;
-      if (!document.getElementById("nartya-seek-style")) {
+      if (!document.getElementById("dayumi-seek-style")) {
         const style = document.createElement("style");
-        style.id = "nartya-seek-style";
+        style.id = "dayumi-seek-style";
         style.textContent =
-          "@keyframes nartya-chev{0%,75%,100%{opacity:.2}38%{opacity:1}}" +
-          ".nartya-seek{position:absolute;top:50%;transform:translateY(-50%);display:flex;" +
+          "@keyframes dayumi-chev{0%,75%,100%{opacity:.2}38%{opacity:1}}" +
+          ".dayumi-seek{position:absolute;top:50%;transform:translateY(-50%);display:flex;" +
           "align-items:center;gap:14px;pointer-events:none;color:#fff;opacity:0;" +
           "transition:opacity .16s ease;z-index:60;filter:drop-shadow(0 2px 6px rgba(0,0,0,.85))}" +
-          ".nartya-seek-num{font:800 34px/1 system-ui,sans-serif}" +
+          ".dayumi-seek-num{font:800 34px/1 system-ui,sans-serif}" +
           // Recentre les chevrons sur les chiffres.
-          ".nartya-seek-chevs{display:flex;transform:translateY(3px)}" +
-          ".nartya-seek-chevs svg{width:26px;height:26px;animation:nartya-chev .9s infinite;margin:0 -7px}" +
-          ".nartya-seek-fwd svg:nth-child(1){animation-delay:0s}" +
-          ".nartya-seek-fwd svg:nth-child(2){animation-delay:.12s}" +
-          ".nartya-seek-fwd svg:nth-child(3){animation-delay:.24s}" +
-          ".nartya-seek-rev svg:nth-child(1){animation-delay:.24s}" +
-          ".nartya-seek-rev svg:nth-child(2){animation-delay:.12s}" +
-          ".nartya-seek-rev svg:nth-child(3){animation-delay:0s}";
+          ".dayumi-seek-chevs{display:flex;transform:translateY(3px)}" +
+          ".dayumi-seek-chevs svg{width:26px;height:26px;animation:dayumi-chev .9s infinite;margin:0 -7px}" +
+          ".dayumi-seek-fwd svg:nth-child(1){animation-delay:0s}" +
+          ".dayumi-seek-fwd svg:nth-child(2){animation-delay:.12s}" +
+          ".dayumi-seek-fwd svg:nth-child(3){animation-delay:.24s}" +
+          ".dayumi-seek-rev svg:nth-child(1){animation-delay:.24s}" +
+          ".dayumi-seek-rev svg:nth-child(2){animation-delay:.12s}" +
+          ".dayumi-seek-rev svg:nth-child(3){animation-delay:0s}";
         document.head.appendChild(style);
       }
       const chevs = (fwd) => {
         const d = fwd ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6";
         const svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
-        return `<div class="nartya-seek-chevs ${fwd ? "nartya-seek-fwd" : "nartya-seek-rev"}">${svg + svg + svg}</div>`;
+        return `<div class="dayumi-seek-chevs ${fwd ? "dayumi-seek-fwd" : "dayumi-seek-rev"}">${svg + svg + svg}</div>`;
       };
-      const num = (t) => `<span class="nartya-seek-num">${t}s</span>`;
+      const num = (t) => `<span class="dayumi-seek-num">${t}s</span>`;
       const make = (side) => {
         const el = document.createElement("div");
-        el.className = "nartya-seek";
+        el.className = "dayumi-seek";
         el.style[side] = "8%";
         host.appendChild(el);
         return el;
@@ -360,14 +360,14 @@ export default function VideoPlayer({
         console.warn("[player] réglage Boost audio indisponible :", e);
       }
 
-      art._nartyaReady = true;
+      art._dayumiReady = true;
       addAnime4kSetting(art);
 
       // Les anciens volumes persistés supposaient un gain permanent.
       try {
-        if (!localStorage.getItem("nartya_vol_v3")) {
+        if (!localStorage.getItem("dayumi_vol_v3")) {
           art.volume = 1;
-          localStorage.setItem("nartya_vol_v3", "1");
+          localStorage.setItem("dayumi_vol_v3", "1");
         }
       } catch (_) {}
       // Ancré dans l'élément ArtPlayer pour rester visible en plein écran.
@@ -538,7 +538,7 @@ export default function VideoPlayer({
         art.destroy(); // nettoie le DOM (double lecteur en StrictMode)
       } catch (_) {}
       artRef.current = null;
-      art._nartyaReady = false;
+      art._dayumiReady = false;
       infoElRef.current = null;
       langSettingRef.current = false;
       srcSettingRef.current = false;

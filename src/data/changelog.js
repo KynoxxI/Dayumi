@@ -5,12 +5,120 @@
  */
 export const CHANGELOG = [
   {
+    version: "1.42.0",
+    date: "6 novembre 2026",
+    items: [
+      {
+        type: "new",
+        text: "⚡ Synchronisation Discord Tickets : Chaque signalement crée désormais automatiquement un ticket privé pour le staff avec bouton de prise en charge et réponse directe en direct via !r.",
+      },
+      {
+        type: "new",
+        text: "🏆 Classement en temps réel : Le classement de la communauté se synchronise en direct depuis la base de données MariaDB selon votre temps de visionnage et épisodes.",
+      },
+      {
+        type: "improved",
+        text: "🔒 Confidentialité des signalements : Vos signalements et messages sont désormais strictement confidentiels et protégés.",
+      },
+      {
+        type: "fixed",
+        text: "Correction de l'en-tête et affichage net des titres de pages (Watch Party, Classement, Signalements) sans superposition de flou.",
+      },
+      {
+        type: "fixed",
+        text: "Mise à jour du Hub et du registre d'installation de Dayumi vers la version officielle 1.4.2.",
+      },
+    ],
+  },
+  {
+    version: "1.40.0",
+    date: "4 novembre 2026",
+    items: [
+      {
+        type: "new",
+        text: "🎉 Salons Watch Party : Création et synchronisation instantanées des salons pour visionner vos animes à plusieurs avec chat et synchronisation vidéo.",
+      },
+      {
+        type: "new",
+        text: "🌐 Accès Web aux Salons : Visionnage direct des salons depuis le navigateur web sur anime.dayumi.site.",
+      },
+      {
+        type: "improved",
+        text: "⭐ Système de Favoris & Notation garanti : Vos animes préférés et notes d'épisodes sont désormais sauvegardés immédiatement sans blocage.",
+      },
+      {
+        type: "improved",
+        text: "⏱️ Reprise de lecture instantanée : Suivi en direct de votre progression pour reprendre vos épisodes là où vous vous étiez arrêtés.",
+      },
+      {
+        type: "fixed",
+        text: "Résolution des déconnexions du lecteur temps réel et amélioration des performances générales.",
+      },
+    ],
+  },
+  {
+    version: "1.39.0",
+    date: "4 novembre 2026",
+    items: [
+      {
+        type: "improved",
+        text: "✨ Interface fluide : Correction de l'en-tête et alignement des titres de pages.",
+      },
+      {
+        type: "improved",
+        text: "🔄 Synchronisation Supabase & reprise de lecture multi-appareils opérationnelle.",
+      },
+      {
+        type: "fixed",
+        text: "Liaison OAuth Discord et authentification globale du Hub.",
+      },
+      {
+        type: "new",
+        text: "✨ Refonte esthétique Dayumi Cristal : Cartes flottantes arrondies en verre avec bordures luminescentes et reflets améthyste & solaire.",
+      },
+      {
+        type: "new",
+        text: "🚀 Interface épurée & moderne : Suppression définitive des styles brutaux pour une navigation fluide et haut de gamme.",
+      },
+      {
+        type: "improved",
+        text: "💎 Synchronisation Dayumi Hub & Discord : Liaison instantanée et attribution automatique de votre rôle Discord exclusif.",
+      },
+      {
+        type: "improved",
+        text: "⚡ Performances de streaming optimisées : Réactivité accrue du lecteur vidéo et temps de chargement réduits.",
+      },
+      {
+        type: "fixed",
+        text: "Notes de version du Hub et détection instantanée des mises à jour.",
+      },
+    ],
+  },
+  {
+    version: "1.38.0",
+    date: "2 novembre 2026",
+    items: [
+      {
+        type: "new",
+        text: "Nouvelle esthétique Dayumi : cartes flottantes arrondies en verre et halos solaires.",
+      },
+      {
+        type: "improved",
+        text: "Boutons d'action en verre et dégradés fluides.",
+      },
+      {
+        type: "fixed",
+        text: "Suppression de la texture granuleuse sombre et fluidification des transitions visuelles.",
+      },
+    ],
+  },
+  {
     version: "1.37.0",
     date: "25 octobre 2026",
     items: [
       {
         type: "improved",
-        text: "Beaucoup plus d’épisodes se lancent du premier coup : Nartya va chercher les vidéos chez de nouveaux hébergeurs, souvent en 1080p, et passe tout seul au suivant si le premier ne répond pas.",
+        text: "Beaucoup plus d’épisodes se lancent du premier coup : Dayumi va chercher les vidéos chez de nouveaux hébergeurs, souvent en 1080p, et passe tout seul au suivant si le premier ne répond pas.",
       },
       {
         type: "improved",
@@ -18,7 +126,7 @@ export const CHANGELOG = [
       },
       {
         type: "improved",
-        text: "Les sources sont maintenant nommées dans l’ordre où Nartya les essaie (Source A, B, C…). Ta source prioritaire est conservée, seule sa lettre a pu changer ; si elle faisait partie des sources retirées, elle repasse sur « Automatique ».",
+        text: "Les sources sont maintenant nommées dans l’ordre où Dayumi les essaie (Source A, B, C…). Ta source prioritaire est conservée, seule sa lettre a pu changer ; si elle faisait partie des sources retirées, elle repasse sur « Automatique ».",
       },
     ],
   },
@@ -32,7 +140,7 @@ export const CHANGELOG = [
       },
       {
         type: "fixed",
-        text: "Après un épisode qui avait planté, les autres épisodes du même lecteur se lancent de nouveau sans avoir à redémarrer Nartya.",
+        text: "Après un épisode qui avait planté, les autres épisodes du même lecteur se lancent de nouveau sans avoir à redémarrer Dayumi.",
       },
     ],
   },
@@ -42,7 +150,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "improved",
-        text: "Si ton compte Discord était déjà lié, Nartya te demande une seule fois de te reconnecter avec Discord.",
+        text: "Si ton compte Discord était déjà lié, Dayumi te demande une seule fois de te reconnecter avec Discord.",
       },
     ],
   },
@@ -56,7 +164,7 @@ export const CHANGELOG = [
       },
       {
         type: "new",
-        text: "Lie tes comptes AniList et MyAnimeList dans les Paramètres : les épisodes que tu regardes, tes statuts, tes notes et tes chapitres lus y sont reportés tout seuls. Tu peux aussi importer ta liste AniList ou MyAnimeList dans Nartya, ou envoyer ta liste Nartya là-bas.",
+        text: "Lie tes comptes AniList et MyAnimeList dans les Paramètres : les épisodes que tu regardes, tes statuts, tes notes et tes chapitres lus y sont reportés tout seuls. Tu peux aussi importer ta liste AniList ou MyAnimeList dans Dayumi, ou envoyer ta liste Dayumi là-bas.",
       },
       {
         type: "new",
@@ -134,7 +242,7 @@ export const CHANGELOG = [
       },
       {
         type: "improved",
-        text: "Le statut Discord affiche le nouveau logo de Nartya.",
+        text: "Le statut Discord affiche le nouveau logo de Dayumi.",
       },
       {
         type: "fixed",
@@ -210,7 +318,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Halloween s’invite sur Nartya pendant tout le mois d’octobre : une intro inédite (orage, pleine lune, nuée de chauves-souris) et un renard coiffé de son chapeau de sorcière, dans l’app comme sur l’icône.",
+        text: "Halloween s’invite sur Dayumi pendant tout le mois d’octobre : une intro inédite (orage, pleine lune, nuée de chauves-souris) et un renard coiffé de son chapeau de sorcière, dans l’app comme sur l’icône.",
       },
       {
         type: "fixed",
@@ -224,7 +332,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Nartya change de visage : nouveau renard, nouvelle icône et nouvelle identité (encre, corail et blanc, titres inclinés, contours francs, boutons en relief) sur toute l’app.",
+        text: "Dayumi change de visage : nouveau renard, nouvelle icône et nouvelle identité (encre, corail et blanc, titres inclinés, contours francs, boutons en relief) sur toute l’app.",
       },
       {
         type: "new",
@@ -260,11 +368,11 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Clés d’API : crée ta propre clé pour utiliser le catalogue Nartya dans tes outils. Paramètres → Clés d’API, avec un compte Discord lié. Documentation sur nartya.app/api.",
+        text: "Clés d’API : crée ta propre clé pour utiliser le catalogue Dayumi dans tes outils. Paramètres → Clés d’API, avec un compte Discord lié. Documentation sur nartya.app/api.",
       },
       {
         type: "new",
-        text: "Nartya est open source : le code de l’app est public sur GitHub.",
+        text: "Dayumi est open source : le code de l’app est public sur GitHub.",
       },
       {
         type: "fixed",
@@ -282,7 +390,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Une courte intro animée t’accueille à l’ouverture de l’app. Paramètres → Lecture → Intro Nartya pour la couper.",
+        text: "Une courte intro animée t’accueille à l’ouverture de l’app. Paramètres → Lecture → Intro Dayumi pour la couper.",
       },
       {
         type: "new",
@@ -354,7 +462,7 @@ export const CHANGELOG = [
       },
       {
         type: "new",
-        text: "Profil personnalisable : couleurs, fond, parures et carte Nartya à partager.",
+        text: "Profil personnalisable : couleurs, fond, parures et carte Dayumi à partager.",
       },
       {
         type: "new",
@@ -532,7 +640,7 @@ export const CHANGELOG = [
       },
       {
         type: "fixed",
-        text: "La lecture ne saccade plus quand la fenêtre de Nartya perd le focus, par exemple en mode PiP ou sur un second écran.",
+        text: "La lecture ne saccade plus quand la fenêtre de Dayumi perd le focus, par exemple en mode PiP ou sur un second écran.",
       },
       {
         type: "fixed",
@@ -554,7 +662,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Tu peux maintenant noter chaque anime de 1 à 5 étoiles. La moyenne Nartya apparaît sur la fiche à partir de cinq notes, juste à côté de celle d’AniList.",
+        text: "Tu peux maintenant noter chaque anime de 1 à 5 étoiles. La moyenne Dayumi apparaît sur la fiche à partir de cinq notes, juste à côté de celle d’AniList.",
       },
       {
         type: "new",
@@ -566,7 +674,7 @@ export const CHANGELOG = [
       },
       {
         type: "improved",
-        text: "Dans « Marquer vus », le choix de l’épisode profite maintenant de commandes plus nettes et mieux intégrées au style de Nartya.",
+        text: "Dans « Marquer vus », le choix de l’épisode profite maintenant de commandes plus nettes et mieux intégrées au style de Dayumi.",
       },
       {
         type: "fixed",
@@ -578,7 +686,7 @@ export const CHANGELOG = [
       },
       {
         type: "fixed",
-        text: "L’accès aux sources et aux services Nartya devient plus fiable sur les réseaux dont le DNS bloque certaines adresses, tout en conservant une solution de secours sur les réseaux qui refusent le DNS sécurisé.",
+        text: "L’accès aux sources et aux services Dayumi devient plus fiable sur les réseaux dont le DNS bloque certaines adresses, tout en conservant une solution de secours sur les réseaux qui refusent le DNS sécurisé.",
       },
       {
         type: "fixed",
@@ -586,7 +694,7 @@ export const CHANGELOG = [
       },
       {
         type: "improved",
-        text: "L’ancienne option de liaison Discord a été retirée de l’app desktop : la gestion du compte passe désormais par Nartya Hub.",
+        text: "L’ancienne option de liaison Discord a été retirée de l’app desktop : la gestion du compte passe désormais par Dayumi Hub.",
       },
     ],
   },
@@ -708,11 +816,11 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Films & Séries quitte l'app anime et devient Nartya Movies, une application à part entière à installer depuis le Hub. Ta liste et ta progression t'y attendent : tout est lié à ton compte, rien n'est perdu.",
+        text: "Films & Séries quitte l'app anime et devient Dayumi Movies, une application à part entière à installer depuis le Hub. Ta liste et ta progression t'y attendent : tout est lié à ton compte, rien n'est perdu.",
       },
       {
         type: "fixed",
-        text: "Quand une source vidéo lâche en pleine lecture, Nartya bascule maintenant tout seul sur une autre et reprend exactement là où tu en étais. Le message « la lecture a échoué » n'apparaît plus que si toutes les sources de l'épisode sont tombées.",
+        text: "Quand une source vidéo lâche en pleine lecture, Dayumi bascule maintenant tout seul sur une autre et reprend exactement là où tu en étais. Le message « la lecture a échoué » n'apparaît plus que si toutes les sources de l'épisode sont tombées.",
       },
       {
         type: "improved",
@@ -822,7 +930,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "improved",
-        text: "Sur l'écran de connexion, le Nartya Hub s'ouvre maintenant automatiquement — plus besoin de cliquer sur « Ouvrir Nartya Hub ».",
+        text: "Sur l'écran de connexion, le Dayumi Hub s'ouvre maintenant automatiquement — plus besoin de cliquer sur « Ouvrir Dayumi Hub ».",
       },
       {
         type: "improved",
@@ -848,7 +956,7 @@ export const CHANGELOG = [
       },
       {
         type: "fixed",
-        text: "Sur Mac, le Nartya Hub annonçait qu'aucune version de l'app n'était disponible et refusait de l'installer. L'app est de nouveau proposée, avec une version adaptée à chaque type de Mac — Apple Silicon comme Intel.",
+        text: "Sur Mac, le Dayumi Hub annonçait qu'aucune version de l'app n'était disponible et refusait de l'installer. L'app est de nouveau proposée, avec une version adaptée à chaque type de Mac — Apple Silicon comme Intel.",
       },
     ],
   },
@@ -858,7 +966,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Ta connexion se fait maintenant depuis le Nartya Hub : connecte-toi une fois là-bas et toutes tes apps suivent, sans avoir à te reconnecter dans chacune.",
+        text: "Ta connexion se fait maintenant depuis le Dayumi Hub : connecte-toi une fois là-bas et toutes tes apps suivent, sans avoir à te reconnecter dans chacune.",
       },
       {
         type: "new",
@@ -892,11 +1000,11 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Nartya Hub est arrivé : le launcher qui réunit toutes les apps Nartya au même endroit — installe, lance et met à jour tes apps depuis une seule fenêtre. Installe-le pour continuer à recevoir les mises à jour de l'application.",
+        text: "Dayumi Hub est arrivé : le launcher qui réunit toutes les apps Dayumi au même endroit — installe, lance et met à jour tes apps depuis une seule fenêtre. Installe-le pour continuer à recevoir les mises à jour de l'application.",
       },
       {
         type: "new",
-        text: "Connexion unique : une seule connexion dans le hub et toutes tes apps Nartya démarrent déjà connectées, sans avoir à te reconnecter app par app.",
+        text: "Connexion unique : une seule connexion dans le hub et toutes tes apps Dayumi démarrent déjà connectées, sans avoir à te reconnecter app par app.",
       },
       {
         type: "improved",
@@ -978,7 +1086,7 @@ export const CHANGELOG = [
       },
       {
         type: "new",
-        text: "Nartya Premium : abonnement Plus et Ultimate, avec cosmétiques et avantages exclusifs.",
+        text: "Dayumi Premium : abonnement Plus et Ultimate, avec cosmétiques et avantages exclusifs.",
       },
       {
         type: "new",
@@ -1030,7 +1138,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Nouvel espace Films & Séries (BÊTA) : Nartya ne se limite plus aux animes ! Un tout nouveau catalogue de films et de séries, avec sa propre navigation. Basculez d'un univers à l'autre depuis la barre latérale (petite animation au passage), parcourez, regardez en streaming avec plusieurs sources et langues (VF/VOSTFR), et retrouvez vos titres dans une liste et un profil dédiés à cet univers. ⚠️ Votre liste Films & Séries est pour l'instant enregistrée localement sur votre appareil : ne désinstallez pas Nartya, au risque de la perdre.",
+        text: "Nouvel espace Films & Séries (BÊTA) : Dayumi ne se limite plus aux animes ! Un tout nouveau catalogue de films et de séries, avec sa propre navigation. Basculez d'un univers à l'autre depuis la barre latérale (petite animation au passage), parcourez, regardez en streaming avec plusieurs sources et langues (VF/VOSTFR), et retrouvez vos titres dans une liste et un profil dédiés à cet univers. ⚠️ Votre liste Films & Séries est pour l'instant enregistrée localement sur votre appareil : ne désinstallez pas Dayumi, au risque de la perdre.",
       },
       {
         type: "new",
@@ -1114,7 +1222,7 @@ export const CHANGELOG = [
       },
       {
         type: "new",
-        text: "Nouvelle page d'aide (FAQ) dans le menu Studio : les réponses aux questions les plus courantes sur Nartya.",
+        text: "Nouvelle page d'aide (FAQ) dans le menu Studio : les réponses aux questions les plus courantes sur Dayumi.",
       },
       {
         type: "improved",
@@ -1136,7 +1244,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Parrainage : invitez vos amis sur Nartya et gagnez 0,20 € par personne. Retrouvez votre lien perso et vos gains dans la nouvelle page « Affiliation » (menu de gauche).",
+        text: "Parrainage : invitez vos amis sur Dayumi et gagnez 0,20 € par personne. Retrouvez votre lien perso et vos gains dans la nouvelle page « Affiliation » (menu de gauche).",
       },
       {
         type: "new",
@@ -1154,7 +1262,7 @@ export const CHANGELOG = [
     items: [
       {
         type: "new",
-        text: "Transparence renforcée : chaque version de Nartya est désormais analysée automatiquement par plus de 70 antivirus (VirusTotal) et publiée avec une empreinte de vérification. Vous pouvez contrôler vous-même ce que vous téléchargez depuis notre site.",
+        text: "Transparence renforcée : chaque version de Dayumi est désormais analysée automatiquement par plus de 70 antivirus (VirusTotal) et publiée avec une empreinte de vérification. Vous pouvez contrôler vous-même ce que vous téléchargez depuis notre site.",
       },
     ],
   },

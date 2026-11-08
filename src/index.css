@@ -49,15 +49,15 @@
 }
 
 @layer components {
-  /* Titre « Kitsune Cut » : condensé, majuscule, incliné comme les bannières. */
+  /* Titre Crystalline Dayumi : typographie moderne Outfit, présence géométrique sans inclinaison */
   .t-impact {
     display: inline-block;
-    font-family: "Anton", Impact, sans-serif;
-    font-weight: 400;
+    font-family: "Outfit", sans-serif;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.01em;
     line-height: 1;
-    transform: skewX(-8deg);
+    transform: none;
   }
   /* Remplissage du repère actif de la pagination du héros ; la durée est posée en ligne. */
   .hero-progress {
@@ -69,26 +69,28 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-family: "Anton", Impact, sans-serif;
-    font-weight: 400;
-    font-size: 1.65rem;
-    letter-spacing: 0.02em;
-    line-height: 1;
+    font-family: "Outfit", sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
     text-transform: uppercase;
-    transform: skewX(-8deg);
-    transform-origin: left center;
+    transform: none;
   }
   .section-title::before {
     content: "";
-    width: 7px;
-    height: 1.15em;
-    background: rgb(var(--primary));
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--accent)) 100%);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    box-shadow: 0 0 14px rgb(var(--primary) / 0.8);
     flex-shrink: 0;
+    display: inline-block;
   }
-  /* Filet continu qui s'estompe vers la droite, sans coupure. */
+  /* Filet subtil dégradé cristal */
   .slash-rule {
-    height: 3px;
-    background: linear-gradient(90deg, rgb(var(--primary)) 0%, rgb(var(--primary)) 55%, rgb(var(--primary) / 0) 100%);
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(249, 115, 22, 0.5) 20%, rgba(168, 85, 247, 0.4) 70%, transparent 100%);
   }
   /* Les backdrop-filter forcent une recomposition continue au scroll ; les fonds mobiles sont assez opaques. */
   .mobile-runtime [class*="backdrop-blur"] {
@@ -164,21 +166,52 @@
     text-orientation: upright;
     letter-spacing: 0.15em;
   }
+  /* Bouton d'action principal Dayumi Crystal : dégradé lumineux avec halo fluide */
   .btn-shu {
-    @apply relative inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3
-      font-bold text-primary-fg transition duration-150 hover:brightness-105 active:translate-y-[3px];
-    box-shadow: 0 4px 0 color-mix(in srgb, rgb(var(--primary)) 58%, black);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--amber)) 100%);
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-shu:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 35px rgba(249, 115, 22, 0.65);
   }
   .btn-shu:active {
-    box-shadow: 0 1px 0 color-mix(in srgb, rgb(var(--primary)) 58%, black);
+    transform: scale(0.98);
   }
+
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-white/[0.07] px-6 py-3
-      font-bold text-text backdrop-blur transition duration-150 hover:bg-white/[0.12] active:translate-y-[3px];
-    box-shadow: inset 0 0 0 2px rgb(250 250 250 / 0.28), 0 4px 0 rgb(250 250 250 / 0.16);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
   }
   .btn-ghost:active {
-    box-shadow: inset 0 0 0 2px rgb(250 250 250 / 0.28), 0 1px 0 rgb(250 250 250 / 0.16);
+    transform: scale(0.98);
   }
 }
 

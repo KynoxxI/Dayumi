@@ -1,4 +1,4 @@
-import { HalloweenFox } from "@/components/brand/NartyaMark";
+import { HalloweenFox } from "@/components/brand/DayumiMark";
 import { useIntroPlayback } from "@/hooks/useIntroPlayback";
 import { playHalloweenIntroSound } from "@/utils/halloweenIntroSound";
 import "./HalloweenIntro.css";

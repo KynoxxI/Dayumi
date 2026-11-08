@@ -52,7 +52,7 @@ function cspPlugin(supabaseUrl) {
 
 export default defineConfig(({ mode }) => ({
   plugins: [react(), cspPlugin(loadEnv(mode, process.cwd(), "VITE_").VITE_SUPABASE_URL)],
-  base: "./",
+  base: process.env.VITE_BASE || "./",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

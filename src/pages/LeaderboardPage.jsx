@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Fox } from "@/components/brand/NartyaMark";
+import { Fox } from "@/components/brand/DayumiMark";
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -288,13 +288,24 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     let alive = true;
-    setRows(null);
-    setError(null);
-    getLeaderboard(metricKey, 50, periodKey)
-      .then((r) => alive && setRows(r))
-      .catch((e) => alive && setError(e.message || "Chargement impossible."));
+    const fetchBoard = () => {
+      getLeaderboard(metricKey, 50, periodKey)
+        .then((r) => {
+          if (alive && Array.isArray(r)) setRows(r);
+        })
+        .catch((e) => {
+          if (alive && !rows) setError(e.message || "Chargement impossible.");
+        });
+    };
+
+    fetchBoard();
+    const interval = setInterval(fetchBoard, 10_000);
+    window.addEventListener("focus", fetchBoard);
+
     return () => {
       alive = false;
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchBoard);
     };
   }, [metricKey, periodKey]);
 
@@ -321,7 +332,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="animate-fade-in relative mx-auto max-w-4xl px-4 pb-24 pt-[calc(env(safe-area-inset-top)+4.5rem)] sm:px-8 md:py-10">
-      <Fox className="pointer-events-none absolute -right-10 top-0 h-80 w-80 -rotate-6 select-none text-white/[0.035]" />
+      <Fox className="pointer-events-none absolute -right-6 -top-10 h-56 w-56 -rotate-6 select-none opacity-15" />
 
       <div className="relative md:text-center">
         <div className="flex items-center gap-3 md:justify-center">

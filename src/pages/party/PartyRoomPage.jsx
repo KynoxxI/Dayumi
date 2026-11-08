@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Loader2, AlertTriangle, LogOut, Copy, Check, ListVideo,
-  Search, Tv, Users, Settings2, UserPlus, Globe,
+  Search, Tv, Users, Settings2, UserPlus, Globe, Download, User,
 } from "lucide-react";
+import { Fox } from "@/components/brand/DayumiMark";
+import { platform } from "@/platform";
 import { getSeasonEpisodes } from "@/api/animeApi";
 import { watchTick } from "@/api/progress";
 import { hasPlayableSources } from "@/utils/videoSourceUtils";
@@ -84,11 +86,11 @@ export default function PartyRoomPage() {
   const [tab, setTab] = useState("queue");
   const [showOptions, setShowOptions] = useState(false);
 
-  // Sauf si déjà dedans ou évincé.
+  // Rejoindre le salon (connecté ou invité)
   useEffect(() => {
-    if (!userId || inRoom || connecting || roomFull || roomNotFound) return;
+    if (inRoom || connecting || roomFull || roomNotFound) return;
     if (codeParam) party.joinRoom(codeParam);
-  }, [userId, inRoom, connecting, roomFull, roomNotFound, codeParam, party]);
+  }, [inRoom, connecting, roomFull, roomNotFound, codeParam, party]);
 
   // Différé : en StrictMode (dev), React démonte puis remonte aussitôt la page, et quitter
   // tout de suite effacerait le salon qu'on vient de créer.
@@ -101,8 +103,8 @@ export default function PartyRoomPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    setEpisodes([]);
     if (!current?.slug || current?.season == null) {
-      setEpisodes([]);
       return;
     }
     let alive = true;
@@ -389,12 +391,12 @@ export default function PartyRoomPage() {
       toast.error("Copie impossible");
     }
   };
-  // Une page du site rebondit vers le deep-link nartya://party/<code>.
+  // Lien web direct vers la watch party (ouvre immédiatement le salon sur le web).
   const copyInvite = async () => {
     const c = party.code || codeParam;
     if (!c) return;
     try {
-      await navigator.clipboard.writeText(`${SITE_URL}/open/?party=${c}`);
+      await navigator.clipboard.writeText(`https://anime.dayumi.site/party/${c}`);
       setInviteCopied(true);
       setTimeout(() => setInviteCopied(false), 1500);
     } catch {
@@ -403,7 +405,11 @@ export default function PartyRoomPage() {
   };
   const leave = () => {
     party.leaveRoom();
-    navigate("/party");
+    if (!platform.isElectron) {
+      window.location.href = "https://dayumi.site";
+    } else {
+      navigate("/party");
+    }
   };
 
   const roomCode = party.code || codeParam;
@@ -415,10 +421,10 @@ export default function PartyRoomPage() {
     () =>
       party.participants.filter(
         (p) =>
-          p.clientId !== party.me.clientId &&
+          p.clientId !== party.me?.clientId &&
           (party.sourceStatus[p.clientId] === "loading" || party.sourceStatus[p.clientId] === "buffering")
       ),
-    [party.participants, party.sourceStatus, party.me.clientId]
+    [party.participants, party.sourceStatus, party.me?.clientId]
   );
 
   if (roomNotFound || roomFull) {
@@ -426,7 +432,7 @@ export default function PartyRoomPage() {
       <PartyRoomNotice
         kind={roomNotFound ? "not-found" : "full"}
         code={codeParam}
-        onBack={() => navigate("/party")}
+        onBack={() => (!platform.isElectron ? (window.location.href = "https://dayumi.site") : navigate("/party"))}
       />
     );
   }
@@ -434,6 +440,29 @@ export default function PartyRoomPage() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bg text-text">
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* En-tête avec bouton Télécharger Dayumi Hub (uniquement pour les invités web) */}
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-[#0b0c10] px-4">
+          <div className="flex items-center gap-2.5">
+            <Fox className="h-5 w-5 text-primary" />
+            <span className="text-sm font-black tracking-tight text-white">Dayumi</span>
+            <span className="rounded-full border border-primary/25 bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+              Watch Party
+            </span>
+          </div>
+
+          {!platform.isElectron && (
+            <a
+              href="https://dayumi.site/dl/hub/Dayumi-Hub-Setup-0.5.0.exe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[length:200%_auto] px-3.5 py-1 text-xs font-bold text-white shadow-md shadow-orange-500/20 transition-all duration-300 hover:scale-105 hover:bg-[position:right_center] active:scale-95"
+              title="Télécharger Dayumi Hub pour Windows"
+            >
+              <Download size={13} className="transition-transform group-hover:-translate-y-0.5" />
+              <span>Télécharger Dayumi Hub</span>
+            </a>
+          )}
+        </div>
         {isHost && party.waitingForSources && loadingParticipants.length > 0 && (
           <WaitingBanner
             names={loadingParticipants.map((p) => p.username)}
@@ -447,6 +476,8 @@ export default function PartyRoomPage() {
         <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
           {videoUrl ? (
             <VideoPlayer
+              key={current?.id}
+              mediaKey={current?.id}
               videoUrl={videoUrl}
               title={current?.title || ""}
               episodeLabel={episodeLabel}
@@ -485,10 +516,21 @@ export default function PartyRoomPage() {
                   <p className="text-sm">Chargement de l'épisode…</p>
                 </>
               ) : error ? (
-                <>
+                <div className="flex flex-col items-center gap-3 p-6 text-center">
                   <AlertTriangle className="text-primary" size={32} />
                   <p className="max-w-md text-sm">{error}</p>
-                </>
+                  {!platform.isElectron && (
+                    <a
+                      href="https://dayumi.site/dl/hub/Dayumi-Hub-Setup-0.5.0.exe"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-xs font-bold text-white shadow-md hover:brightness-110 active:scale-95"
+                    >
+                      <Download size={14} />
+                      <span>Télécharger Dayumi Hub pour visionner</span>
+                    </a>
+                  )}
+                </div>
               ) : (
                 <>
                   <Tv size={40} className="text-white/20" />
@@ -553,6 +595,20 @@ export default function PartyRoomPage() {
             {roomCode}
             {copied ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
           </button>
+          {party.me?.isGuest && (
+            <button
+              type="button"
+              onClick={() => {
+                const name = window.prompt("Modifier ton pseudo d'invité :", party.me.username);
+                if (name) party.setGuestNickname?.(name);
+              }}
+              title="Modifier ton pseudo d'invité"
+              className="ml-2 flex items-center gap-1 rounded bg-white/5 px-2 py-0.5 text-xs text-muted hover:bg-white/10 hover:text-white"
+            >
+              <User size={12} />
+              <span className="max-w-[75px] truncate">{party.me.username}</span>
+            </button>
+          )}
           {options.isPublic && (
             <span
               title="Salon public : visible sur la page Watch Party"

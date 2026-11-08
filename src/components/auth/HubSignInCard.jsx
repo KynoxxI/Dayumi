@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { NartyaLockup } from "@/components/brand/NartyaMark";
+import { DayumiLockup } from "@/components/brand/DayumiMark";
 import { Loader2, KeyRound, ExternalLink, Download, CheckCircle2 } from "lucide-react";
 import { openHub, getHubInfo } from "@/lib/hubAuth";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -49,9 +49,9 @@ export default function HubSignInCard({ onOpenTerms }) {
   return (
     <div className="rounded-lg bg-surface/70 p-7 shadow-card ring-1 ring-white/10 backdrop-blur-2xl">
       <div className="mb-6 text-center">
-        <NartyaLockup className="mb-5" />
+        <DayumiLockup className="mb-5" />
         <p className="text-sm leading-relaxed text-muted">
-          Ta connexion Nartya se fait maintenant depuis le Hub. Connecte-toi là-bas, et toutes
+          Ta connexion Dayumi se fait maintenant depuis le Hub. Connecte-toi là-bas, et toutes
           tes apps suivent.
         </p>
       </div>
@@ -60,7 +60,7 @@ export default function HubSignInCard({ onOpenTerms }) {
         <KeyRound size={16} className="mt-0.5 shrink-0 text-primary" />
         <p className="text-xs leading-relaxed text-muted">
           {!hubPresent
-            ? "Le Hub gère ta connexion et les mises à jour de tes apps Nartya. Installe-le une fois, et c'est réglé."
+            ? "Le Hub gère ta connexion et les mises à jour de tes apps Dayumi. Installe-le une fois, et c'est réglé."
             : autoOpen === "opened"
               ? "Le Hub vient de s'ouvrir : connecte-toi là-bas et cette fenêtre se débloquera toute seule, sans avoir à la relancer."
               : autoOpen === "failed"
@@ -101,10 +101,10 @@ export default function HubSignInCard({ onOpenTerms }) {
             <ExternalLink size={16} />
           )}
           {!hubPresent
-            ? "Installer Nartya Hub"
+            ? "Installer Dayumi Hub"
             : autoOpen === "opened"
               ? "Rouvrir le Hub"
-              : "Ouvrir Nartya Hub"}
+              : "Ouvrir Dayumi Hub"}
         </button>
       )}
 

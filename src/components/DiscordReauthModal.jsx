@@ -4,8 +4,8 @@ import { LoaderCircle, RefreshCw } from "lucide-react";
 import DiscordIcon from "@/components/icons/DiscordIcon";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-// En dev : `localStorage.setItem("nartya-debug-discord-reauth", "1")` affiche la modale sans condition.
-const DEBUG_KEY = "nartya-debug-discord-reauth";
+// En dev : `localStorage.setItem("dayumi-debug-discord-reauth", "1")` affiche la modale sans condition.
+const DEBUG_KEY = "dayumi-debug-discord-reauth";
 
 function readFlag(storage, key) {
   try {
@@ -44,7 +44,7 @@ export default function DiscordReauthModal() {
   }, [waiting, reauthError]);
 
   const open = debug ? !debugDone : !!userId && discordGuild === "missing";
-  if (!open) return null;
+  if (!open || typeof window !== "undefined" && window.electronAPI) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -64,7 +64,7 @@ export default function DiscordReauthModal() {
             Reconnecte ton compte Discord
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            La connexion entre Nartya et Discord a été mise à jour. Reconnecte-toi une fois pour la
+            La connexion entre Dayumi et Discord a été mise à jour. Reconnecte-toi une fois pour la
             renouveler : tu restes sur ton compte, rien n'est perdu.
           </p>
           {reauthError && (

@@ -3,6 +3,7 @@ const noop = () => {};
 
 export const electronPlatform = {
   name: "electron",
+  isElectron: true,
   os: api?.platform || null,
   isMobile: false,
   isDesktop: true,

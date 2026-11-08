@@ -14,7 +14,7 @@ import {
  * est local, l'état réclamé vient du serveur.
  */
 
-const MODAL_SEEN_KEY = `nartya-gift-seen:${CURRENT_CAMPAIGN}`;
+const MODAL_SEEN_KEY = `dayumi-gift-seen:${CURRENT_CAMPAIGN}`;
 
 const CONFETTI_COULEURS = [
   "rgb(var(--primary))",
@@ -111,10 +111,10 @@ export default function MilestoneGift() {
   // Pas deux modales au lancement : on attend le signal de « Quoi de neuf ».
   useEffect(() => {
     const done = () => setWhatsNewDone(true);
-    window.addEventListener("nartya:whatsnew-done", done);
+    window.addEventListener("dayumi:whatsnew-done", done);
     const t = setTimeout(done, 2500);
     return () => {
-      window.removeEventListener("nartya:whatsnew-done", done);
+      window.removeEventListener("dayumi:whatsnew-done", done);
       clearTimeout(t);
     };
   }, []);
@@ -248,7 +248,7 @@ export default function MilestoneGift() {
                 </Dialog.Title>
                 <Dialog.Description className="mx-auto mt-3 max-w-sm whitespace-pre-line text-sm leading-relaxed text-muted">
                   {statut.message ||
-                    "Nartya a commencé tout petit, entre deux bugs et trois idées de plus.\n\nMerci d'être là, vraiment. Ultimate t'est offert pendant 7 jours — rien à faire, rien à payer."}
+                    "Dayumi a commencé tout petit, entre deux bugs et trois idées de plus.\n\nMerci d'être là, vraiment. Ultimate t'est offert pendant 7 jours — rien à faire, rien à payer."}
                 </Dialog.Description>
 
                 <div className="mt-5 flex items-center justify-center gap-2 rounded-md bg-surface-2/70 px-4 py-3 ring-1 ring-border">

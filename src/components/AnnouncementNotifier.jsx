@@ -32,10 +32,10 @@ export default function AnnouncementNotifier() {
   // Pas par-dessus « Quoi de neuf ».
   useEffect(() => {
     const done = () => setWhatsNewDone(true);
-    window.addEventListener("nartya:whatsnew-done", done);
+    window.addEventListener("dayumi:whatsnew-done", done);
     const t = setTimeout(done, 2500);
     return () => {
-      window.removeEventListener("nartya:whatsnew-done", done);
+      window.removeEventListener("dayumi:whatsnew-done", done);
       clearTimeout(t);
     };
   }, []);

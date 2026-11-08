@@ -11,12 +11,12 @@ export default function SupporterBadge({ profile, size = "sm", className = "" })
 
   const isUltimate = tier === "ultimate";
   const Icon = isUltimate ? Crown : Sparkles;
-  const label = isUltimate ? "Ultimate" : "Supporter";
+  const label = isUltimate ? "Ultimate" : "Premium";
   const dims = size === "lg" ? "gap-1.5 px-2 py-1 text-[0.7rem]" : "gap-1 px-1.5 py-0.5 text-[0.6rem]";
 
   return (
     <span
-      title={isUltimate ? "Abonné Ultimate" : "Abonné Nartya +"}
+      title={isUltimate ? "Abonné Dayumi Ultimate" : "Abonné Dayumi Premium"}
       style={{
         color: `rgb(${GOLD})`,
         backgroundColor: `rgb(${GOLD} / 0.12)`,

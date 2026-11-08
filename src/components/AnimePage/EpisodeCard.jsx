@@ -307,14 +307,14 @@ function EpisodeCardInner({
   return (
     <div
       ref={rootRef}
-      className={`group relative flex w-full items-center gap-3 rounded-md border-2 border-transparent p-2 transition-[background-color,border-color,box-shadow] duration-300 ${
-        focused ? "border-primary/60 bg-primary/10 " : ""
-      }${
-        upcoming
-          ? "opacity-70"
-          : watched
-            ? "bg-white/[0.025] hover:border-border hover:bg-surface/70 active:bg-white/[0.06] md:bg-transparent"
-            : "hover:border-border hover:bg-surface/70 active:bg-white/[0.06]"
+      className={`group relative flex w-full items-center gap-3.5 rounded-2xl border p-2.5 transition-all duration-300 ${
+        focused
+          ? "border-primary/60 bg-primary/10 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
+          : upcoming
+            ? "opacity-70 border-transparent"
+            : watched
+              ? "border-white/[0.03] bg-white/[0.015] hover:border-white/10 hover:bg-white/[0.04]"
+              : "border-white/[0.04] bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.05]"
       }`}
     >
       <button
@@ -336,8 +336,8 @@ function EpisodeCardInner({
         className="flex min-w-0 flex-1 select-none gap-3 text-left disabled:cursor-default"
       >
         <div
-          className={`relative aspect-video w-32 shrink-0 overflow-hidden rounded-md bg-surface-2 sm:w-48 ${
-            progress && !progress.completed && pct > 0 ? "ring-2 ring-primary" : "ring-2 ring-border"
+          className={`relative aspect-video w-32 shrink-0 overflow-hidden rounded-xl bg-surface-2 sm:w-48 border ${
+            progress && !progress.completed && pct > 0 ? "border-primary shadow-[0_0_12px_rgba(249,115,22,0.4)]" : "border-white/10"
           }`}
         >
           {img ? (

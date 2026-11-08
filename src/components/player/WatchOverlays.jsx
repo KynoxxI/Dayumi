@@ -58,7 +58,7 @@ export function FallbackBackButton({ onClick }) {
 export function ContentWarning({ tags, leaving }) {
   return (
     <div
-      className={`nartya-touch-ui pointer-events-none absolute left-5 top-16 z-[54] flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 font-sans text-sm font-medium text-white shadow-lg backdrop-blur-sm ${
+      className={`dayumi-touch-ui pointer-events-none absolute left-5 top-16 z-[54] flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 font-sans text-sm font-medium text-white shadow-lg backdrop-blur-sm ${
         leaving ? "animate-slide-out-left" : "animate-slide-in-left"
       }`}
     >
@@ -71,7 +71,7 @@ export function ContentWarning({ tags, leaving }) {
 
 export function PostCreditNotice() {
   return (
-    <div className="nartya-touch-ui pointer-events-none absolute top-6 right-6 z-[56] flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 font-sans text-sm font-medium text-white shadow-lg backdrop-blur-sm animate-fade-in">
+    <div className="dayumi-touch-ui pointer-events-none absolute top-6 right-6 z-[56] flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 font-sans text-sm font-medium text-white shadow-lg backdrop-blur-sm animate-fade-in">
       <Info size={16} style={{ fill: "none" }} className="shrink-0 text-white/70" />
       Une scène suit le générique
     </div>
@@ -85,7 +85,7 @@ export function SkipSegmentButton({ segment, hasNext, nextLabel = "Épisode suiv
     <button
       type="button"
       onClick={goesNext ? onNext : onSkip}
-      className="nartya-touch-ui pointer-events-auto absolute bottom-24 right-6 z-[56] flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black shadow-lg transition-transform hover:scale-[1.03] animate-fade-in"
+      className="dayumi-touch-ui pointer-events-auto absolute bottom-24 right-6 z-[56] flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 font-sans text-sm font-semibold text-black shadow-lg transition-transform hover:scale-[1.03] animate-fade-in"
     >
       {segment.type === "intro" ? "Passer l'intro" : goesNext ? nextLabel : "Passer l'ending"}
       <svg
@@ -107,7 +107,7 @@ export function SkipSegmentButton({ segment, hasNext, nextLabel = "Épisode suiv
 
 export function AutoSkipBadge({ kind }) {
   return (
-    <div className="nartya-touch-ui pointer-events-none absolute bottom-24 right-6 z-[56] flex items-center gap-2 rounded-lg bg-black/75 px-4 py-2.5 font-sans text-sm font-semibold text-white shadow-lg backdrop-blur-sm animate-slide-in-right">
+    <div className="dayumi-touch-ui pointer-events-none absolute bottom-24 right-6 z-[56] flex items-center gap-2 rounded-lg bg-black/75 px-4 py-2.5 font-sans text-sm font-semibold text-white shadow-lg backdrop-blur-sm animate-slide-in-right">
       <FastForward size={15} className="shrink-0 animate-autoskip-bounce text-primary" />
       Autoskip ·{" "}
       {kind === "intro" ? "intro passée" : kind === "outro" ? "ending passé" : "épisode suivant"}
@@ -120,7 +120,7 @@ export function NextEpisodeCountdown({ remaining, windowSeconds, label = "Épiso
   const progress = Math.min(1, Math.max(0, (windowSeconds - remaining) / windowSeconds));
   const countdown = Math.max(1, Math.ceil(remaining));
   return (
-    <div className="nartya-touch-ui pointer-events-auto absolute bottom-24 right-6 z-[56] flex items-center gap-3 animate-fade-in">
+    <div className="dayumi-touch-ui pointer-events-auto absolute bottom-24 right-6 z-[56] flex items-center gap-3 animate-fade-in">
       <button
         type="button"
         onClick={onNext}

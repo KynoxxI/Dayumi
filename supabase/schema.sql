@@ -15,7 +15,7 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER SCHEMA public OWNER TO pg_database_owner;
+-- -- ALTER SCHEMA public OWNER TO pg_database_owner;
 
 COMMENT ON SCHEMA public IS 'standard public schema';
 
@@ -1195,7 +1195,7 @@ CREATE FUNCTION public.anime_rating_min_votes() RETURNS integer
     SET search_path TO 'public'
     AS $$ select 5 $$;
 
-ALTER FUNCTION public.anime_rating_min_votes() OWNER TO supabase_admin;
+ALTER FUNCTION public.anime_rating_min_votes() OWNER TO postgres;
 
 CREATE FUNCTION public.api_account_banned(p_user uuid) RETURNS boolean
     LANGUAGE sql STABLE SECURITY DEFINER
@@ -1253,7 +1253,7 @@ CREATE FUNCTION public.bug_report_message_cooldown_seconds() RETURNS integer
     LANGUAGE sql IMMUTABLE
     AS $$ select 10 $$;
 
-ALTER FUNCTION public.bug_report_message_cooldown_seconds() OWNER TO supabase_admin;
+ALTER FUNCTION public.bug_report_message_cooldown_seconds() OWNER TO postgres;
 
 CREATE FUNCTION public.check_ban(p_machine_id text DEFAULT NULL::text) RETURNS json
     LANGUAGE plpgsql SECURITY DEFINER
@@ -1455,13 +1455,13 @@ CREATE FUNCTION public.client_log_retention_days() RETURNS integer
     LANGUAGE sql IMMUTABLE
     AS $$ select 30 $$;
 
-ALTER FUNCTION public.client_log_retention_days() OWNER TO supabase_admin;
+ALTER FUNCTION public.client_log_retention_days() OWNER TO postgres;
 
 CREATE FUNCTION public.client_log_ring_size() RETURNS integer
     LANGUAGE sql IMMUTABLE
     AS $$ select 100 $$;
 
-ALTER FUNCTION public.client_log_ring_size() OWNER TO supabase_admin;
+ALTER FUNCTION public.client_log_ring_size() OWNER TO postgres;
 
 CREATE FUNCTION public.comment_cooldown_seconds() RETURNS integer
     LANGUAGE sql IMMUTABLE
@@ -1652,7 +1652,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.delete_anime_rating(p_slug text) OWNER TO supabase_admin;
+ALTER FUNCTION public.delete_anime_rating(p_slug text) OWNER TO postgres;
 
 CREATE FUNCTION public.delete_comment(p_id uuid) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
@@ -1875,7 +1875,7 @@ begin
   return v_code;
 end; $$;
 
-ALTER FUNCTION public.gen_support_code(p_username text) OWNER TO supabase_admin;
+ALTER FUNCTION public.gen_support_code(p_username text) OWNER TO postgres;
 
 CREATE FUNCTION public.gen_unique_handle(p_seed text) RETURNS text
     LANGUAGE plpgsql SECURITY DEFINER
@@ -1936,7 +1936,7 @@ CREATE FUNCTION public.get_anime_rating_summary(p_slug text) RETURNS TABLE(avera
   from scoped;
 $$;
 
-ALTER FUNCTION public.get_anime_rating_summary(p_slug text) OWNER TO supabase_admin;
+ALTER FUNCTION public.get_anime_rating_summary(p_slug text) OWNER TO postgres;
 
 CREATE FUNCTION public.get_campaign_status(p_campaign text) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -2855,7 +2855,7 @@ begin
   return v_out;
 end; $$;
 
-ALTER FUNCTION public.hub_support_dossier(p_code text, p_scope text) OWNER TO supabase_admin;
+ALTER FUNCTION public.hub_support_dossier(p_code text, p_scope text) OWNER TO postgres;
 
 CREATE FUNCTION public.hub_top_animes(p_limit integer DEFAULT 3, p_period text DEFAULT 'all'::text, p_sort text DEFAULT 'plays'::text, p_since timestamp with time zone DEFAULT NULL::timestamp with time zone, p_until timestamp with time zone DEFAULT NULL::timestamp with time zone) RETURNS TABLE(anime_slug text, anime_title text, anime_cover text, total_plays bigint, unique_viewers bigint, watch_seconds double precision, trusted_seconds double precision, completions bigint)
     LANGUAGE plpgsql STABLE SECURITY DEFINER
@@ -3233,7 +3233,7 @@ begin
   return v_id;
 end; $$;
 
-ALTER FUNCTION public.log_client_event(p_app text, p_event text, p_level text, p_message text, p_detail jsonb, p_app_version text, p_platform text) OWNER TO supabase_admin;
+ALTER FUNCTION public.log_client_event(p_app text, p_event text, p_level text, p_message text, p_detail jsonb, p_app_version text, p_platform text) OWNER TO postgres;
 
 CREATE FUNCTION public.mark_announcements_read(p_ids uuid[] DEFAULT NULL::uuid[]) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
@@ -3260,7 +3260,7 @@ CREATE FUNCTION public.my_support_code() RETURNS TABLE(support_code text, suppor
   where p.id = auth.uid();
 $$;
 
-ALTER FUNCTION public.my_support_code() OWNER TO supabase_admin;
+ALTER FUNCTION public.my_support_code() OWNER TO postgres;
 
 CREATE FUNCTION public.online_count() RETURNS bigint
     LANGUAGE sql STABLE SECURITY DEFINER
@@ -3423,7 +3423,7 @@ begin
   return new;
 end; $$;
 
-ALTER FUNCTION public.profiles_set_support_code() OWNER TO supabase_admin;
+ALTER FUNCTION public.profiles_set_support_code() OWNER TO postgres;
 
 CREATE FUNCTION public.purchase_credit_item(p_item_id text) RETURNS TABLE(credits integer, owned text[])
     LANGUAGE plpgsql SECURITY DEFINER
@@ -3963,7 +3963,7 @@ begin
   return v_code;
 end; $$;
 
-ALTER FUNCTION public.regen_support_code() OWNER TO supabase_admin;
+ALTER FUNCTION public.regen_support_code() OWNER TO postgres;
 
 CREATE FUNCTION public.release_device_slot(p_machine_id text) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4131,7 +4131,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_create(p_id uuid, p_message_id uuid, p_category text, p_body text, p_attachments jsonb, p_app_version text, p_platform text, p_context jsonb) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_create(p_id uuid, p_message_id uuid, p_category text, p_body text, p_attachments jsonb, p_app_version text, p_platform text, p_context jsonb) OWNER TO postgres;
 
 CREATE FUNCTION public.report_messages(p_report_id uuid) RETURNS jsonb
     LANGUAGE plpgsql STABLE SECURITY DEFINER
@@ -4178,7 +4178,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_messages(p_report_id uuid) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_messages(p_report_id uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.report_my_list() RETURNS jsonb
     LANGUAGE sql STABLE SECURITY DEFINER
@@ -4203,7 +4203,7 @@ CREATE FUNCTION public.report_my_list() RETURNS jsonb
   where r.user_id = auth.uid();
 $$;
 
-ALTER FUNCTION public.report_my_list() OWNER TO supabase_admin;
+ALTER FUNCTION public.report_my_list() OWNER TO postgres;
 
 CREATE FUNCTION public.report_send_message(p_report_id uuid, p_message_id uuid, p_body text, p_attachments jsonb DEFAULT '[]'::jsonb) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4286,7 +4286,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_send_message(p_report_id uuid, p_message_id uuid, p_body text, p_attachments jsonb) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_send_message(p_report_id uuid, p_message_id uuid, p_body text, p_attachments jsonb) OWNER TO postgres;
 
 CREATE FUNCTION public.report_staff_claim(p_report_id uuid) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4330,7 +4330,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_staff_claim(p_report_id uuid) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_staff_claim(p_report_id uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.report_staff_dossier(p_report_id uuid) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4369,7 +4369,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_staff_dossier(p_report_id uuid) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_staff_dossier(p_report_id uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.report_staff_list(p_scope text DEFAULT 'queue'::text, p_category text DEFAULT 'all'::text) RETURNS jsonb
     LANGUAGE plpgsql STABLE SECURITY DEFINER
@@ -4418,7 +4418,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_staff_list(p_scope text, p_category text) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_staff_list(p_scope text, p_category text) OWNER TO postgres;
 
 CREATE FUNCTION public.report_staff_release(p_report_id uuid) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4460,7 +4460,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_staff_release(p_report_id uuid) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_staff_release(p_report_id uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.report_staff_set_status(p_report_id uuid, p_status text) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4521,7 +4521,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.report_staff_set_status(p_report_id uuid, p_status text) OWNER TO supabase_admin;
+ALTER FUNCTION public.report_staff_set_status(p_report_id uuid, p_status text) OWNER TO postgres;
 
 CREATE FUNCTION public.respond_friend_request(p_requester uuid, p_accept boolean) RETURNS json
     LANGUAGE plpgsql SECURITY DEFINER
@@ -4764,7 +4764,7 @@ begin
   update public.profiles set support_optin = coalesce(p_enabled, true) where id = auth.uid();
 end; $$;
 
-ALTER FUNCTION public.set_support_optin(p_enabled boolean) OWNER TO supabase_admin;
+ALTER FUNCTION public.set_support_optin(p_enabled boolean) OWNER TO postgres;
 
 CREATE FUNCTION public.set_username(p_username text) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
@@ -5085,14 +5085,14 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.support_dossier_for_user(p_user uuid) OWNER TO supabase_admin;
+ALTER FUNCTION public.support_dossier_for_user(p_user uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.support_user_email(p_user uuid) RETURNS text
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO ''
     AS $$ select u.email::text from auth.users u where u.id = p_user $$;
 
-ALTER FUNCTION public.support_user_email(p_user uuid) OWNER TO supabase_admin;
+ALTER FUNCTION public.support_user_email(p_user uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.sync_profile_watch_stats() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
@@ -5263,7 +5263,7 @@ begin
 end;
 $$;
 
-ALTER FUNCTION public.upsert_anime_rating(p_slug text, p_rating smallint) OWNER TO supabase_admin;
+ALTER FUNCTION public.upsert_anime_rating(p_slug text, p_rating smallint) OWNER TO postgres;
 
 CREATE FUNCTION public.user_real_episodes(p_user uuid) RETURNS bigint
     LANGUAGE sql STABLE SECURITY DEFINER
@@ -5509,7 +5509,7 @@ CREATE TABLE public.anime_ratings (
     CONSTRAINT anime_ratings_rating_check CHECK (((rating >= 1) AND (rating <= 5)))
 );
 
-ALTER TABLE public.anime_ratings OWNER TO supabase_admin;
+ALTER TABLE public.anime_ratings OWNER TO postgres;
 
 CREATE TABLE public.anime_seasons (
     slug text NOT NULL,
@@ -5607,7 +5607,7 @@ CREATE TABLE public.bug_report_attachments (
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
-ALTER TABLE public.bug_report_attachments OWNER TO supabase_admin;
+ALTER TABLE public.bug_report_attachments OWNER TO postgres;
 
 CREATE TABLE public.bug_report_messages (
     id uuid NOT NULL,
@@ -5621,7 +5621,7 @@ CREATE TABLE public.bug_report_messages (
     CONSTRAINT bug_report_messages_author_role_check CHECK ((author_role = ANY (ARRAY['user'::text, 'staff'::text, 'admin'::text, 'system'::text])))
 );
 
-ALTER TABLE public.bug_report_messages OWNER TO supabase_admin;
+ALTER TABLE public.bug_report_messages OWNER TO postgres;
 
 CREATE TABLE public.bug_reports (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -5686,7 +5686,7 @@ CREATE TABLE public.client_logs (
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
-ALTER TABLE public.client_logs OWNER TO supabase_admin;
+ALTER TABLE public.client_logs OWNER TO postgres;
 
 CREATE SEQUENCE public.client_logs_id_seq
     START WITH 1
@@ -5695,7 +5695,7 @@ CREATE SEQUENCE public.client_logs_id_seq
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE public.client_logs_id_seq OWNER TO supabase_admin;
+ALTER SEQUENCE public.client_logs_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.client_logs_id_seq OWNED BY public.client_logs.id;
 
@@ -7686,30 +7686,30 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENC
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
 
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
 
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO postgres;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO service_role;
 
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO postgres;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO postgres;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO anon;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO service_role;
 
 -- Création du profil à l'inscription
 
@@ -7770,6 +7770,6 @@ create policy page_backgrounds_write_own_upd on storage.objects as permissive fo
 
 -- Tâches planifiées (pg_cron)
 
-select cron.schedule('purge-audit-log-entries', '11 4 * * *', 'select public.purge_audit_log_entries();');
-select cron.schedule('refresh-admin-dashboard-snapshot', '7,22,37,52 * * * *', 'select public.refresh_admin_dashboard_snapshot();');
-select cron.schedule('refresh-stats-snapshot', '*/30 * * * *', 'select public.refresh_stats_snapshot();');
+-- select cron.schedule('purge-audit-log-entries', '11 4 * * *', 'select public.purge_audit_log_entries();');
+-- select cron.schedule('refresh-admin-dashboard-snapshot', '7,22,37,52 * * * *', 'select public.refresh_admin_dashboard_snapshot();');
+-- select cron.schedule('refresh-stats-snapshot', '*/30 * * * *', 'select public.refresh_stats_snapshot();');

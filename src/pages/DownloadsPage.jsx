@@ -27,7 +27,7 @@ const FAILED_STATUSES = new Set(["error", "interrupted"]);
 const ACTIVE_STATUSES = new Set(["downloading", "queued", "resolving"]);
 const CONFIRM_TIMEOUT_MS = 4000;
 
-const COLLAPSE_KEY = "nartya_downloads_collapsed";
+const COLLAPSE_KEY = "dayumi_downloads_collapsed";
 
 function formatSize(bytes) {
   if (!bytes) return "—";

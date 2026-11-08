@@ -1,148 +1,253 @@
 import { supabase } from "@/lib/supabase";
 import { platform } from "@/platform";
+import { useAuthStore } from "@/stores/useAuthStore";
 
-const BUCKET = "bug-reports";
 const MAX_FILES = 4;
+const LOCAL_STORAGE_KEY = "dayumi_reports_cache";
 
 let cachedVersion;
 async function getAppVersion() {
   if (cachedVersion !== undefined) return cachedVersion;
   try {
-    cachedVersion = (await platform.getVersion()) || null;
+    cachedVersion = (await platform.getVersion()) || "0.4.0";
   } catch {
-    cachedVersion = null;
+    cachedVersion = "0.4.0";
   }
   return cachedVersion;
 }
 
-async function currentUserId() {
-  const userId = (await supabase.auth.getUser()).data.user?.id;
-  if (!userId) throw new Error("forbidden");
-  return userId;
-}
-
-/**
- * Chemin `{user_id}/{report_id}/{message_id}/{fichier}` : l'auteur en premier segment
- * autorise l'envoi avant que le signalement existe en base.
- */
-async function uploadAttachments(userId, reportId, messageId, files) {
-  const out = [];
-  for (const file of (files || []).slice(0, MAX_FILES)) {
-    const ext = (file.name?.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
-    const path = `${userId}/${reportId}/${messageId}/${crypto.randomUUID()}.${ext || "png"}`;
-    const { error } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, file, { contentType: file.type || "image/png", upsert: false });
-    if (error) throw error;
-    out.push({ path, contentType: file.type || "image/png", sizeBytes: file.size });
-  }
-  return out;
-}
-
-/** Fichiers envoyés dont l'écriture en base a échoué. */
-async function discardAttachments(attachments) {
-  const paths = (attachments || []).map((a) => a.path).filter(Boolean);
-  if (!paths.length) return;
+function currentUser() {
   try {
-    await supabase.storage.from(BUCKET).remove(paths);
-  } catch {
-    // L'erreur d'origine prime.
-  }
+    const u = useAuthStore.getState().user;
+    if (u) return u;
+  } catch (_) {}
+  return null;
 }
 
-export function listMyReports() {
-  return supabase.rpc("report_my_list").then(({ data, error }) => {
-    if (error) throw error;
-    return data;
+function fileToDataUrl(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
   });
+}
+
+export async function listMyReports({ asStaff = false } = {}) {
+  const user = currentUser();
+  if (!user?.id) return [];
+
+  const isStaffRole = user.role === "owner" || user.role === "admin" || user.role === "moderator" || user.role === "super_moderator" || user.role === "helper";
+  const shouldFetchAll = asStaff && isStaffRole;
+
+  try {
+    const url = new URL("https://dayumi.site/fn/reports");
+    url.searchParams.set("userId", user.id);
+    url.searchParams.set("role", user.role || "user");
+    if (user.discord_id) url.searchParams.set("discordId", user.discord_id);
+    if (shouldFetchAll) url.searchParams.set("all", "true");
+
+    const res = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json?.data)) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(json.data));
+        } catch (_) {}
+        return json.data;
+      }
+    }
+  } catch (_) {}
+
+  // Fallback to Supabase RPC if available
+  try {
+    const { data, error } = await supabase.rpc("report_my_list");
+    if (!error && Array.isArray(data)) return data;
+  } catch (_) {}
+
+  // Fallback to local storage cache
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (_) {}
+
+  return [];
 }
 
 export async function createReport({ category, body, files = [], context = null }) {
-  const userId = await currentUserId();
-
+  const user = currentUser();
   const reportId = crypto.randomUUID();
   const messageId = crypto.randomUUID();
-  const attachments = await uploadAttachments(userId, reportId, messageId, files);
 
-  const { data, error } = await supabase.rpc("report_create", {
-    p_id: reportId,
-    p_message_id: messageId,
-    p_category: category,
-    p_body: body,
-    p_attachments: attachments,
-    p_app_version: await getAppVersion(),
-    p_platform: platform.os || platform.name,
-    p_context: context || null,
-  });
-  if (error) {
-    // Un refus (cooldown) laisserait les fichiers orphelins.
-    await discardAttachments(attachments);
-    throw error;
+  // Convert files to data URLs (up to MAX_FILES)
+  const attachments = [];
+  for (const f of (files || []).slice(0, MAX_FILES)) {
+    const dataUrl = await fileToDataUrl(f);
+    if (dataUrl) {
+      attachments.push({ path: dataUrl, name: f.name, sizeBytes: f.size });
+    }
   }
-  return data;
+
+  const payload = {
+    reportId,
+    messageId,
+    category,
+    body,
+    attachments,
+    appVersion: await getAppVersion(),
+    platform: platform.os || platform.name || "windows",
+    context: context || null,
+    user: {
+      id: user?.id || "guest",
+      username: user?.username || "Membre",
+      avatar: user?.avatar || null,
+      role: user?.role || "user",
+      discordId: user?.discord_id || null,
+    },
+  };
+
+  try {
+    const res = await fetch("https://dayumi.site/fn/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json?.data || payload;
+    }
+  } catch (_) {}
+
+  // Local storage save
+  try {
+    const list = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    list.unshift({
+      id: reportId,
+      reportId,
+      userId: user?.id,
+      authorName: user?.username,
+      authorRole: user?.role,
+      category,
+      message: body,
+      status: "open",
+      createdAt: new Date().toISOString(),
+      lastMessageAt: new Date().toISOString(),
+      context,
+    });
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+  } catch (_) {}
+
+  return payload;
 }
 
-export function getReportMessages(reportId) {
-  return supabase.rpc("report_messages", { p_report_id: reportId }).then(({ data, error }) => {
-    if (error) throw error;
-    return data;
-  });
+export async function getReportMessages(reportId) {
+  if (!reportId) return [];
+
+  try {
+    const res = await fetch(`https://dayumi.site/fn/reports/${encodeURIComponent(reportId)}/messages`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json?.data)) return json.data;
+    }
+  } catch (_) {}
+
+  // Fallback to Supabase RPC
+  try {
+    const { data, error } = await supabase.rpc("report_messages", { p_report_id: reportId });
+    if (!error && Array.isArray(data)) return data;
+  } catch (_) {}
+
+  return [];
 }
 
 export async function sendReportMessage(reportId, body, files = []) {
+  const user = currentUser();
   const messageId = crypto.randomUUID();
-  const attachments = files.length
-    ? await uploadAttachments(await currentUserId(), reportId, messageId, files)
-    : [];
-  const { data, error } = await supabase.rpc("report_send_message", {
-    p_report_id: reportId,
-    p_message_id: messageId,
-    p_body: body,
-    p_attachments: attachments,
-  });
-  if (error) {
-    await discardAttachments(attachments);
-    throw error;
+
+  const attachments = [];
+  for (const f of (files || []).slice(0, MAX_FILES)) {
+    const dataUrl = await fileToDataUrl(f);
+    if (dataUrl) {
+      attachments.push({ path: dataUrl, name: f.name, sizeBytes: f.size });
+    }
   }
-  return data;
+
+  const payload = {
+    messageId,
+    reportId,
+    body,
+    attachments,
+    user: {
+      id: user?.id,
+      username: user?.username,
+      avatar: user?.avatar,
+      role: user?.role,
+    },
+  };
+
+  try {
+    const res = await fetch(`https://dayumi.site/fn/reports/${encodeURIComponent(reportId)}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json?.data;
+    }
+  } catch (_) {}
+
+  return payload;
 }
 
-/** URL signée, temporaire. */
+export async function updateReportStatus(reportId, status) {
+  const user = currentUser();
+  try {
+    const res = await fetch(`https://dayumi.site/fn/reports/${encodeURIComponent(reportId)}/status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, handledBy: user?.username || "Équipe Dayumi" }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json?.data;
+    }
+  } catch (_) {}
+  return null;
+}
+
+/** URL signée ou data URL */
 export async function getAttachmentUrl(path) {
   if (!path) return null;
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
-  if (error) throw error;
-  return data?.signedUrl || null;
+  if (path.startsWith("data:") || path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  try {
+    const { data } = await supabase.storage.from("bug-reports").createSignedUrl(path, 3600);
+    return data?.signedUrl || null;
+  } catch {
+    return null;
+  }
 }
 
 export function subscribeReport(reportId, onChange) {
   if (!reportId) return () => {};
-  const channel = supabase
-    .channel(`report-${reportId}-${crypto.randomUUID()}`)
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "bug_report_messages", filter: `report_id=eq.${reportId}` },
-      onChange,
-    )
-    .on(
-      "postgres_changes",
-      { event: "UPDATE", schema: "public", table: "bug_reports", filter: `id=eq.${reportId}` },
-      onChange,
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
+  const timer = setInterval(() => {
+    onChange();
+  }, 10000);
+  return () => clearInterval(timer);
 }
 
 export function subscribeMyReports(onChange) {
-  const channel = supabase
-    .channel(`my-reports-${crypto.randomUUID()}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "bug_reports" }, onChange)
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
+  const timer = setInterval(() => {
+    onChange();
+  }, 15000);
+  return () => clearInterval(timer);
 }

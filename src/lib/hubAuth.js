@@ -5,7 +5,7 @@ import { SITE_URL } from "@/config/instance";
 
 export const HUB_DOWNLOAD_URL = `${SITE_URL}/`;
 
-export const authOwnedByHub = () => platform.isDesktop;
+export const authOwnedByHub = () => Boolean(platform.isElectron);
 
 /** `method === "website"` : hub introuvable, à traiter comme un échec par qui comptait sur lui. */
 export async function openHub(hubPresent = true) {

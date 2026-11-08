@@ -379,7 +379,7 @@ function castLoad(device, media) {
           metadata: {
             type: 0,
             metadataType: 0,
-            title: media.title || "Nartya",
+            title: media.title || "Dayumi",
             images: media.poster ? [{ url: media.poster }] : [],
           },
         };
@@ -424,7 +424,7 @@ async function explainFailure(err, device, loadStartedAt) {
   if (!reached) {
     const fw = await getFirewallStatus();
     if (fw?.blocked || (fw?.publicNetwork && !fw?.allowedOnNetwork)) {
-      return { error: "Le pare-feu Windows empêche la TV de récupérer la vidéo sur ce PC. Autorise Nartya dans « Pare-feu Windows Defender › Autoriser une application », ou passe ce réseau en « Privé »." };
+      return { error: "Le pare-feu Windows empêche la TV de récupérer la vidéo sur ce PC. Autorise Dayumi dans « Pare-feu Windows Defender › Autoriser une application », ou passe ce réseau en « Privé »." };
     }
     return { error: "La TV n'arrive pas à récupérer la vidéo sur ce PC. Vérifie ton pare-feu, et coupe ton VPN s'il est actif." };
   }

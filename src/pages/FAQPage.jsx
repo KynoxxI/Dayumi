@@ -62,7 +62,7 @@ const ANIME_WATCH = {
   items: [
     {
       q: "Sur quels appareils Dayumi est disponible ?",
-      a: "Sur ordinateur (Windows, macOS 13 ou plus récent, Linux), sur Android et sur iPhone. C'est le même compte partout : favoris, listes et progression te suivent d'un appareil à l'autre.\nTout se télécharge depuis nartya.app.",
+      a: "Sur ordinateur (Windows, macOS 13 ou plus récent, Linux), sur Android et sur iPhone. C'est le même compte partout : favoris, listes et progression te suivent d'un appareil à l'autre.\nTout se télécharge depuis dayumi.site.",
     },
     {
       q: "D'où viennent les vidéos ? Est-ce que Dayumi héberge les animes ?",
@@ -194,7 +194,7 @@ const CAT_CONFIDENTIALITE = {
     },
     {
       q: "Mon antivirus/navigateur me met en garde au téléchargement. C'est un virus ?",
-      a: "Non. Chaque version de Dayumi est analysée par plus de 70 antivirus (VirusTotal) avant d'être publiée, avec une empreinte de vérification. Le rapport de chaque fichier est consultable sur nartya.app/verification. Ces alertes sont des « faux positifs » fréquents pour les applications peu répandues.\nTélécharge toujours Dayumi depuis le site officiel, nartya.app.",
+      a: "Non. Chaque version de Dayumi est analysée par plus de 70 antivirus (VirusTotal) avant d'être publiée, avec une empreinte de vérification. Le rapport de chaque fichier est consultable sur dayumi.site. Ces alertes sont des « faux positifs » fréquents pour les applications peu répandues.\nTélécharge toujours Dayumi depuis le site officiel, dayumi.site.",
     },
     {
       q: "Quelles données Dayumi conserve sur moi ?",

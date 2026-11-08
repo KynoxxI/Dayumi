@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { supabase, OAUTH_REDIRECT } from "@/lib/supabase";
+import { dbSyncUser } from "@/api/dayumiDb";
 import { authOwnedByHub } from "@/lib/hubAuth";
 import { getCaptchaToken } from "@/lib/captcha";
 import { countPasswordLeaks } from "@/lib/passwordSafety";
@@ -15,10 +16,10 @@ import {
 function readPersistedSession() {
   try {
     const raw = localStorage.getItem("dayumi-auth") || localStorage.getItem("nartya-auth");
-    if (!raw) return null;
+    if (!raw || raw.includes("dayumi-local-token")) return null;
     const parsed = JSON.parse(raw);
     const session = parsed?.currentSession ?? parsed;
-    return session?.access_token && session?.user ? session : null;
+    return session?.access_token && session.access_token.includes(".") && session?.user ? session : null;
   } catch {
     return null;
   }
@@ -30,9 +31,10 @@ async function readSharedSessionFile() {
     raw = (await platform.session?.get?.("dayumi-auth")) || (await platform.session?.get?.("nartya-auth"));
   } catch (_) {}
   try {
+    if (!raw || raw.includes("dayumi-local-token")) return null;
     const parsed = raw ? JSON.parse(raw) : null;
     const s = parsed?.currentSession ?? parsed;
-    if (s?.access_token && s?.refresh_token) return s;
+    if (s?.access_token && s.access_token.includes(".") && s?.refresh_token) return s;
   } catch (_) {}
   return null;
 }
@@ -49,11 +51,11 @@ function readableOAuthError(value) {
     normalized.includes("identity is already linked to another user") ||
     normalized.includes("identity_already_exists")
   ) {
-    return "Ce compte Discord est déjà lié à un autre compte Nartya. Connectez-vous à ce compte ou choisissez un autre compte Discord.";
+    return "Ce compte Discord est déjà lié à un autre compte Dayumi. Connectez-vous à ce compte ou choisissez un autre compte Discord.";
   }
   if (normalized.includes("access_denied")) return "L'autorisation Discord a été annulée.";
   if (normalized.includes("manual") && normalized.includes("link")) {
-    return "La liaison de comptes Discord n'est pas encore activée côté Nartya.";
+    return "La liaison de comptes Discord n'est pas encore activée côté Dayumi.";
   }
   return decoded;
 }
@@ -85,30 +87,49 @@ export const useAuthStore = create((set, get) => ({
   discordReauthPending: false,
 
   init: async () => {
-    // Le profil n'est pas chargé ici : sans jeton encore, la requête partirait non authentifiée.
-    const seeded = readPersistedSession();
-    set({ session: seeded, loading: false });
+    let seeded = readPersistedSession();
+    if (!seeded && (authOwnedByHub() || platform.session)) {
+      try {
+        const shared = await readSharedSessionFile();
+        if (shared?.access_token && shared.access_token.includes(".")) {
+          seeded = shared;
+          localStorage.setItem("dayumi-auth", JSON.stringify(shared));
+        }
+      } catch (_) {}
+    }
 
-    // Avant tout await, pour ne dépendre d'aucun appel réseau.
+    if (seeded?.access_token && seeded.access_token.includes(".")) {
+      set({ session: seeded, loading: false });
+      if (seeded?.user) dbSyncUser(seeded.user);
+      get().loadProfile({ dedupe: true });
+    } else {
+      set({ session: null, loading: false });
+    }
+
     supabase.auth.onAuthStateChange((event, newSession) => {
-      // Un SIGNED_OUT peut venir d'une course de refresh avec le Hub : on tente le fichier partagé.
       if (!newSession && event === "SIGNED_OUT" && authOwnedByHub()) {
         get().recoverFromSharedSession(get().session?.access_token);
         return;
       }
-      // Hors ligne, `INITIAL_SESSION, null` peut venir d'un refresh impossible : on confirme avant de vider.
       if (!newSession && event === "INITIAL_SESSION" && get().session) {
         get().confirmInitialSignedOut();
         return;
       }
-      // Changement de compte (souvent via le Hub, sans passer par `signOut`) : le statut
-      // serveur Discord était celui du compte précédent.
       if (newSession?.user?.id !== get().session?.user?.id) {
         set({ discordGuild: "unknown", discordReauthError: null, discordReauthPending: false });
       }
       set({ session: newSession, _avatarRefreshTried: false });
-      if (newSession) get().loadProfile({ dedupe: true });
-      else set({ user: null });
+      if (newSession) {
+        if (newSession.user) dbSyncUser(newSession.user);
+        if (platform.session?.set) {
+          try {
+            platform.session.set("dayumi-auth", JSON.stringify(newSession));
+          } catch (_) {}
+        }
+        get().loadProfile({ dedupe: true });
+      } else {
+        set({ user: null });
+      }
     });
 
     platform.onAuthCallback((url) => get().handleAuthCallback(url));
@@ -117,19 +138,40 @@ export const useAuthStore = create((set, get) => ({
       platform.session.onChanged((value) => get().applyExternalSession(value));
     }
 
-    // Le timer de fond de Supabase est coupé : ce filet ne rafraîchit que si le Hub ne l'a pas fait.
-    if (authOwnedByHub()) get().startSharedRefresher();
+    if (authOwnedByHub() || platform.session) {
+      get().startSharedRefresher();
+      get().pollSharedSessionUntilConnected();
+    }
 
-    // Repli si `fs.watch` manque une notification.
-    if (authOwnedByHub()) get().pollSharedSessionUntilConnected();
-
-    // getSession peut revenir null hors ligne : on garde la session amorcée.
     supabase.auth
       .getSession()
-      .then(({ data: { session } }) => {
-        if (session) {
+      .then(async ({ data: { session }, error }) => {
+        if (error || !session) {
+          if (
+            error?.message?.includes("Invalid Refresh Token") ||
+            error?.message?.includes("Invalid JWT") ||
+            error?.message?.includes("No suitable key") ||
+            error?.code === "refresh_token_already_used"
+          ) {
+            try {
+              await platform.session?.remove?.("dayumi-auth");
+              await platform.session?.remove?.("nartya-auth");
+              localStorage.removeItem("dayumi-auth");
+              localStorage.removeItem("nartya-auth");
+            } catch (_) {}
+            set({ session: null, user: null });
+          }
+          return;
+        }
+        if (session && session.access_token && session.access_token.includes(".")) {
           set({ session });
-          if (get().user?.id !== session.user.id) get().loadProfile({ dedupe: true });
+          if (platform.session?.set) {
+            try {
+              platform.session.set("dayumi-auth", JSON.stringify(session));
+              platform.session.set("nartya-auth", JSON.stringify(session));
+            } catch (_) {}
+          }
+          get().loadProfile({ dedupe: true });
         }
       })
       .catch(() => {});
@@ -149,62 +191,99 @@ export const useAuthStore = create((set, get) => ({
   _fetchProfile: async () => {
     const { session } = get();
     if (!session?.user) return;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .maybeSingle();
-    if (error) {
-      console.warn("[auth] loadProfile:", error.message);
-      return;
-    }
-    // Profil absent : requête partie avant l'authentification, ou compte supprimé. `getUser()`
-    // tranche : 401/403 déconnecte, une erreur réseau ne change rien.
-    if (!data) {
-      try {
-        const { data: u, error: uErr } = await supabase.auth.getUser();
-        const status = uErr?.status;
-        if ((uErr && (status === 401 || status === 403)) || (!uErr && !u?.user)) {
-          console.warn("[auth] compte introuvable côté serveur → déconnexion");
-          await get().signOut();
-        }
-      } catch (_) {
-        /* réseau indisponible : ne pas déconnecter */
-      }
-      return;
-    }
-
-    // Seul l'avatar suit les métadonnées de session : le pseudo appartient à l'utilisateur.
     const meta = session.user.user_metadata || {};
-    const freshAvatar = meta.avatar_url || meta.picture || null;
-    const patch = {};
+    const discordId =
+      meta.provider_id ||
+      session.user.identities?.find((i) => i.provider === "discord")?.id ||
+      null;
 
-    // À l'heure près : ce bloc tourne à chaque rafraîchissement de jeton.
-    const lastLogin = data.last_login ? new Date(data.last_login).getTime() : 0;
-    if (Date.now() - lastLogin > 60 * 60 * 1000) {
-      patch.last_login = new Date().toISOString();
+    let dbProfile = null;
+    try {
+      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      if (data) dbProfile = data;
+    } catch (_) {}
+
+    let d = null;
+    try {
+      const res = await fetch("https://dayumi.site/fn/refresh-discord-avatar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "get-link",
+          userId: session.user.id,
+          discordId,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      const disc = json?.discord || json?.data?.discord;
+      if (disc) {
+        d = disc;
+        localStorage.setItem("dayumi-discord-linked", JSON.stringify(d));
+      }
+    } catch (_) {}
+
+    const isOwnerAccount =
+      session.user.id === "0a0a9e1d-36a7-4676-b0ac-9bc707fc5b47" ||
+      session.user.id === "3539c2c0-7398-484b-9f32-8f1601b4ea93" ||
+      session.user.email === "manex.off@gmail.com" ||
+      discordId === "921387528169345064";
+
+    const ownerName = "!'Kynoxx🍵";
+    const username = isOwnerAccount
+      ? (dbProfile?.username && dbProfile.username !== "manex.off" ? dbProfile.username : ownerName)
+      : (dbProfile?.username ||
+         d?.globalName ||
+         d?.username ||
+         meta.custom_claims?.global_name ||
+         meta.full_name ||
+         "Membre Dayumi");
+
+    const avatar =
+      dbProfile?.avatar ||
+      d?.avatarUrl ||
+      meta.avatar_url ||
+      meta.picture ||
+      (isOwnerAccount ? "https://cdn.discordapp.com/avatars/921387528169345064/a_6615d16a27ce980abdc85a6c0ea4bab7.gif" : null);
+
+    const banner =
+      dbProfile?.banner ||
+      d?.bannerUrl ||
+      (isOwnerAccount ? "https://artworks.thetvdb.com/banners/v4/series/74796/backgrounds/6314f8664ecb1.jpg" : null);
+
+    const plan = dbProfile?.premium_tier || d?.plan || (isOwnerAccount ? "ultimate" : "free");
+    const role = (dbProfile?.role === "admin" || isOwnerAccount) ? "owner" : (dbProfile?.role || d?.role || "user");
+    let roleLabel = d?.roleLabel;
+    if (isOwnerAccount) {
+      roleLabel = "👑ゝOwner";
+    } else if (role === "beta_tester" || role === "beta" || role === "tester") {
+      roleLabel = "🧪ゝBêta Testeur";
+    } else if (!roleLabel) {
+      if (role === "admin") roleLabel = "🦇ゝAdmin";
+      else if (role === "modo") roleLabel = "👁️ゝModo";
+      else if (role === "helper") roleLabel = "🧟ゝHelper";
+      else roleLabel = "Membre";
     }
 
-    // Lier Discord à un compte e-mail ne vaut pas consentement à importer ses visuels.
-    const primaryProvider = session.user.app_metadata?.provider;
-    if (primaryProvider === "discord" && freshAvatar && freshAvatar !== data.avatar) {
-      patch.avatar = freshAvatar;
-    }
+    set({
+      user: {
+        id: session.user.id,
+        username,
+        handle: isOwnerAccount ? "kynoxx052" : (dbProfile?.handle || d?.username || username.toLowerCase().replace(/\s+/g, "")),
+        avatar,
+        banner,
+        role,
+        premium_tier: plan === "free" ? null : plan,
+        subscription_tier: plan,
+        plan,
+        planLabel: d?.planLabel || (isOwnerAccount ? "Dayumi Ultimate" : "Gratuit"),
+        roleLabel: roleLabel || d?.roleLabel || (isOwnerAccount ? "👑ゝOwner" : "Membre"),
+      },
+      discordGuild: "member",
+    });
 
-    set({ user: { ...data, avatar: patch.avatar ?? data.avatar } });
-
-    // Import dynamique : évite un cycle de modules au démarrage.
     import("@/stores/useAnnouncementsStore")
       .then((m) => m.useAnnouncementsStore.getState().refresh())
       .catch(() => {});
-
-    if (Object.keys(patch).length) {
-      supabase
-        .from("profiles")
-        .update(patch)
-        .eq("id", session.user.id)
-        .then(() => {});
-    }
   },
 
   /** Quand l'avatar stocké renvoie 404. Une tentative par session. */
@@ -400,24 +479,34 @@ export const useAuthStore = create((set, get) => ({
   continueAsGuest: async () => {
     // Sans captcha, `signInAnonymously` fabriquerait des comptes en boucle.
     const captchaToken = await getCaptchaToken();
-    const { error } = await supabase.auth.signInAnonymously({
+    const { data, error } = await supabase.auth.signInAnonymously({
       options: captchaToken ? { captchaToken } : undefined,
     });
     if (error) {
       console.error("[auth] signInAnonymously:", error.message);
       return { error: error.message };
     }
+    if (data?.session && platform.session?.set) {
+      try {
+        await platform.session.set("dayumi-auth", JSON.stringify(data.session));
+      } catch (_) {}
+    }
     return { error: null };
   },
 
   signInWithEmail: async (email, password) => {
     const captchaToken = await getCaptchaToken();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
       options: captchaToken ? { captchaToken } : undefined,
     });
     if (error) return { error: error.message };
+    if (data?.session && platform.session?.set) {
+      try {
+        await platform.session.set("dayumi-auth", JSON.stringify(data.session));
+      } catch (_) {}
+    }
     return { error: null };
   },
 
@@ -441,6 +530,11 @@ export const useAuthStore = create((set, get) => ({
       options: Object.keys(options).length ? options : undefined,
     });
     if (error) return { error: error.message };
+    if (data?.session && platform.session?.set) {
+      try {
+        await platform.session.set("dayumi-auth", JSON.stringify(data.session));
+      } catch (_) {}
+    }
     return { error: null, needsConfirm: !data?.session };
   },
 
@@ -453,10 +547,18 @@ export const useAuthStore = create((set, get) => ({
       const url = new URL(callbackUrl);
       const completingDiscordLink =
         sessionStorage.getItem("nartya-discord-link-pending") === "1";
+
+      const hashString = (url.hash || "").replace(/^#/, "");
+      const hashParams = new URLSearchParams(hashString);
+
       const oauthError =
         url.searchParams.get("error_description") ||
+        hashParams.get("error_description") ||
         url.searchParams.get("error_code") ||
-        url.searchParams.get("error");
+        hashParams.get("error_code") ||
+        url.searchParams.get("error") ||
+        hashParams.get("error");
+
       if (oauthError) {
         if (completingReauth) set({ discordReauthError: readableOAuthError(oauthError) });
         if (completingDiscordLink) {
@@ -469,21 +571,47 @@ export const useAuthStore = create((set, get) => ({
         }
         return;
       }
-      const code = url.searchParams.get("code");
-      if (!code) return;
-      const { data: exchanged, error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        console.error("[auth] exchangeCodeForSession:", error.message);
-        if (completingReauth) set({ discordReauthError: readableOAuthError(error.message) });
-        if (completingDiscordLink) {
-          sessionStorage.removeItem("nartya-discord-link-pending");
-          const message = readableOAuthError(error.message);
-          set({
-            discordLinkFeedback: { type: "error", message },
-            discordLinkError: message,
-          });
+
+      const code = url.searchParams.get("code") || hashParams.get("code");
+      const accessToken = url.searchParams.get("access_token") || hashParams.get("access_token");
+      const refreshToken = url.searchParams.get("refresh_token") || hashParams.get("refresh_token");
+
+      let exchanged = null;
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error("[auth] exchangeCodeForSession:", error.message);
+          if (completingReauth) set({ discordReauthError: readableOAuthError(error.message) });
+          if (completingDiscordLink) {
+            sessionStorage.removeItem("nartya-discord-link-pending");
+            const message = readableOAuthError(error.message);
+            set({
+              discordLinkFeedback: { type: "error", message },
+              discordLinkError: message,
+            });
+          }
+          return;
         }
+        exchanged = data;
+      } else if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) {
+          console.error("[auth] setSession via tokens:", error.message);
+          return;
+        }
+        exchanged = data;
+      } else {
         return;
+      }
+
+      // Synchronisation immédiate vers le fichier de session partagé (%APPDATA%/Dayumi/shared/session.json)
+      if (exchanged?.session && platform.session?.set) {
+        try {
+          await platform.session.set("dayumi-auth", JSON.stringify(exchanged.session));
+        } catch (_) {}
       }
 
       // Un autre compte Discord choisi sur l'écran d'autorisation ouvrirait un autre compte Nartya.
@@ -549,6 +677,12 @@ export const useAuthStore = create((set, get) => ({
       const { releaseDeviceSlot } = await import("@/api/devices");
       await releaseDeviceSlot();
     } catch (_) {}
+    try {
+      if (platform.session?.remove) {
+        await platform.session.remove("dayumi-auth");
+        await platform.session.remove("nartya-auth");
+      }
+    } catch (_) {}
     await supabase.auth.signOut();
     set({
       session: null,
@@ -590,6 +724,20 @@ export const useAuthStore = create((set, get) => ({
       });
       if (error) {
         console.warn("[auth] session partagée refusée par le serveur:", error.message);
+        if (
+          error.message?.includes("Invalid Refresh Token") ||
+          error.message?.includes("Invalid JWT") ||
+          error.message?.includes("No suitable key") ||
+          error.code === "refresh_token_already_used"
+        ) {
+          try {
+            await platform.session?.remove?.("dayumi-auth");
+            await platform.session?.remove?.("nartya-auth");
+            localStorage.removeItem("dayumi-auth");
+            localStorage.removeItem("nartya-auth");
+          } catch (_) {}
+          set({ session: null, user: null });
+        }
         return;
       }
       if (wasSignedOut) platform.focusWindow();
@@ -635,6 +783,14 @@ export const useAuthStore = create((set, get) => ({
       });
       if (error) {
         console.warn("[auth] re-synchro session partagée refusée:", error.message);
+        if (error.message?.includes("Invalid Refresh Token") || error.code === "refresh_token_already_used") {
+          try {
+            await platform.session?.remove?.("dayumi-auth");
+            await platform.session?.remove?.("nartya-auth");
+            localStorage.removeItem("dayumi-auth");
+            localStorage.removeItem("nartya-auth");
+          } catch (_) {}
+        }
         clear();
       }
     } catch (e) {

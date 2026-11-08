@@ -17,7 +17,7 @@ import { bugCategoryLabel } from "@/utils/bugCategories";
 import AttachmentThumb from "./AttachmentThumb";
 import Lightbox from "./Lightbox";
 
-const TEAM_ROLES = new Set(["staff", "admin"]);
+const TEAM_ROLES = new Set(["owner", "admin", "staff", "smod", "modo", "helper"]);
 const MAX_FILES = 4;
 const MAX_FILE_MB = 5;
 

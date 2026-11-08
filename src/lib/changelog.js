@@ -4,11 +4,11 @@ import { IOS_CHANGELOG } from "../data/changelog.ios.js";
 import { compareVersions } from "./semver.js";
 
 const CHANGELOG_LAST_SEEN_KEYS = {
-  android: "nartya-last-seen-version:android-v1",
-  ios: "nartya-last-seen-version:ios-v1",
-  desktop: "nartya-last-seen-version",
+  android: "dayumi-last-seen-version:android-v1",
+  ios: "dayumi-last-seen-version:ios-v1",
+  desktop: "dayumi-last-seen-version",
 };
-export const CHANGELOG_SEEN_EVENT = "nartya:changelog-seen";
+export const CHANGELOG_SEEN_EVENT = "dayumi:changelog-seen";
 
 const CHANGELOG_BY_TARGET = {
   android: MOBILE_CHANGELOG,

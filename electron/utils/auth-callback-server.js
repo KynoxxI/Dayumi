@@ -1,29 +1,28 @@
 /**
- * Retour OAuth en loopback (RFC 8252) : `nartya://` est peu fiable sur Linux et ChromeOS. Les
- * ports candidats doivent être autorisés côté Supabase (Redirect URLs).
+ * Retour OAuth en loopback (RFC 8252) : supporte le code PKCE et le hash implicit flow.
  */
 
 import http from "http";
 
-// À autoriser dans Supabase : http://127.0.0.1:<port>/auth-callback
 const CANDIDATE_PORTS = [8351, 8352, 8353];
 const CALLBACK_PATH = "/auth-callback";
 const HOST = "127.0.0.1";
 
-const SUCCESS_HTML = `<!doctype html>
+const LANDING_HTML = `<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nartya — Connexion réussie</title>
+<title>Dayumi — Connexion</title>
 <style>
   html,body{height:100%;margin:0}
   body{display:flex;align-items:center;justify-content:center;
        font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
        background:#0b0b0f;color:#f5f5f7}
-  .card{text-align:center;max-width:420px;padding:40px 28px}
+  .card{text-align:center;max-width:440px;padding:40px 28px}
   .check{width:64px;height:64px;border-radius:50%;background:#5865F2;
          display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+  .check.err{background:#ff4a2d1a;border:1px solid #ff4a2d55;color:#ff7259;font-size:32px;font-weight:300}
   .check svg{width:34px;height:34px;stroke:#fff;stroke-width:3;fill:none}
   h1{font-size:20px;margin:0 0 10px}
   p{font-size:14px;color:#a1a1aa;margin:0;line-height:1.5}
@@ -31,90 +30,67 @@ const SUCCESS_HTML = `<!doctype html>
 </head>
 <body>
   <div class="card">
-    <div class="check">
+    <div class="check" id="iconBox">
       <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <h1>Connexion réussie</h1>
-    <p>Vous pouvez fermer cet onglet et revenir à l'application Nartya.</p>
+    <h1 id="titleBox">Connexion réussie</h1>
+    <p id="msgBox">Vous pouvez fermer cet onglet et revenir à l'application Dayumi.</p>
   </div>
-  <script>setTimeout(function(){ try { window.close(); } catch (e) {} }, 800);</script>
+  <script>
+    (function() {
+      var hash = window.location.hash ? window.location.hash.substring(1) : "";
+      var search = window.location.search ? window.location.search.substring(1) : "";
+      var params = new URLSearchParams(search);
+      var hashParams = new URLSearchParams(hash);
+
+      var code = params.get("code") || hashParams.get("code");
+      var accessToken = params.get("access_token") || hashParams.get("access_token");
+      var refreshToken = params.get("refresh_token") || hashParams.get("refresh_token");
+      var error = params.get("error_description") || hashParams.get("error_description") ||
+                  params.get("error_code") || hashParams.get("error_code") ||
+                  params.get("error") || hashParams.get("error");
+
+      // Transmettre les jetons du hash au serveur loopback
+      if (hash && (code || accessToken)) {
+        try {
+          fetch("/auth-callback-tokens", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: code,
+              access_token: accessToken,
+              refresh_token: refreshToken,
+              hash: hash,
+              search: search,
+              url: window.location.href
+            })
+          }).catch(function() {});
+        } catch (e) {}
+      }
+
+      if (error && !code && !accessToken) {
+        var ib = document.getElementById("iconBox");
+        ib.className = "check err";
+        ib.innerHTML = "!";
+        document.getElementById("titleBox").innerText = "Échec de la connexion";
+        var decoded = error.replace(/\\+/g, " ");
+        try { decoded = decodeURIComponent(decoded); } catch (e) {}
+        document.getElementById("msgBox").innerText = decoded;
+      } else {
+        setTimeout(function(){ try { window.close(); } catch (e) {} }, 1200);
+      }
+    })();
+  </script>
 </body>
 </html>`;
 
-function decodeOAuthError(value) {
-  if (!value) return "";
-  const withSpaces = String(value).replace(/\+/g, " ");
-  try {
-    return decodeURIComponent(withSpaces);
-  } catch {
-    return withSpaces;
-  }
-}
-
-function oauthErrorCopy(searchParams) {
-  const raw = decodeOAuthError(
-    searchParams.get("error_description") || searchParams.get("error_code") || searchParams.get("error")
-  );
-  const normalized = raw.toLowerCase();
-
-  if (
-    normalized.includes("identity is already linked to another user") ||
-    normalized.includes("identity_already_exists")
-  ) {
-    return {
-      title: "Ce compte Discord est déjà utilisé",
-      message:
-        "Il est déjà lié à un autre compte Nartya. Connectez-vous à ce compte ou choisissez un autre compte Discord.",
-    };
-  }
-  if (normalized.includes("access_denied")) {
-    return {
-      title: "Autorisation annulée",
-      message: "Aucune modification n'a été apportée à votre compte Nartya.",
-    };
-  }
-  return {
-    title: "Échec de la connexion",
-    message: "Refermez cet onglet et réessayez depuis l'application Nartya.",
-  };
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function errorHtml(searchParams) {
-  const copy = oauthErrorCopy(searchParams);
-  return `<!doctype html>
-<html lang="fr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nartya — ${escapeHtml(copy.title)}</title>
-<style>
-html,body{height:100%;margin:0}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-background:#0b0b0f;color:#f5f5f7;display:flex;align-items:center;justify-content:center;text-align:center}
-.card{max-width:460px;padding:40px 28px}.mark{width:64px;height:64px;border-radius:8px;background:#ff4a2d1a;
-border:1px solid #ff4a2d55;color:#ff7259;display:flex;align-items:center;justify-content:center;
-margin:0 auto 24px;font-size:34px;font-weight:300}h1{font-size:21px;margin:0 0 10px}
-p{font-size:14px;color:#a1a1aa;margin:0;line-height:1.6}
-</style></head><body><main class="card"><div class="mark">!</div>
-<h1>${escapeHtml(copy.title)}</h1><p>${escapeHtml(copy.message)}</p></main></body></html>`;
-}
-
 class AuthCallbackServer {
   constructor() {
-    /** @type {http.Server|null} */
     this.server = null;
-    /** @type {number|null} */
     this.port = null;
-    /** @type {((url: string) => void)|null} */
     this.onCallback = null;
   }
 
-  /** @returns {Promise<number|null>} le port retenu, ou null */
   async start(onCallback) {
     this.onCallback = onCallback;
     for (const port of CANDIDATE_PORTS) {
@@ -158,16 +134,35 @@ class AuthCallbackServer {
       return;
     }
 
+    if (req.method === "POST" && parsed.pathname === "/auth-callback-tokens") {
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", () => {
+        try {
+          const data = JSON.parse(body || "{}");
+          if (data && (data.url || data.code || data.access_token || data.hash)) {
+            const reconstructed = data.url || `http://${HOST}:${this.port}${CALLBACK_PATH}?${data.search || ""}${data.hash ? "#" + data.hash : ""}`;
+            this.onCallback?.(reconstructed);
+          }
+        } catch (e) {
+          console.error("[AuthCallback] POST tokens failed:", e);
+        }
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ ok: true }));
+      });
+      return;
+    }
+
     if (parsed.pathname !== CALLBACK_PATH) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Not Found");
       return;
     }
 
-    const hasCode = parsed.searchParams.has("code");
     const fullUrl = `http://${HOST}:${this.port}${req.url}`;
-
-    // Même canal IPC que le deep-link.
     try {
       this.onCallback?.(fullUrl);
     } catch (e) {
@@ -175,10 +170,9 @@ class AuthCallbackServer {
     }
 
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-    res.end(hasCode ? SUCCESS_HTML : errorHtml(parsed.searchParams));
+    res.end(LANDING_HTML);
   }
 
-  /** @returns {string|null} null si le serveur n'est pas démarré */
   getRedirectUrl() {
     if (!this.port) return null;
     return `http://${HOST}:${this.port}${CALLBACK_PATH}`;

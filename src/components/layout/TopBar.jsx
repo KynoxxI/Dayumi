@@ -156,22 +156,22 @@ export default function TopBar({ scrolled }) {
 
   return (
     <header
-      className={`app-drag pointer-events-none sticky top-0 z-40 flex h-16 items-center px-4 transition-colors duration-300 md:px-8 ${
-        scrolled ? "border-b border-border/70 bg-bg/85 backdrop-blur-xl" : "bg-transparent"
+      className={`app-drag pointer-events-none sticky top-0 z-40 flex h-16 items-center px-4 transition-all duration-300 md:px-8 ${
+        scrolled ? "border-b border-white/[0.08] bg-[#0c0a10]/85 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.4)]" : "bg-transparent"
       }`}
     >
       {showBack && (
         <button
           onClick={() => navigate(-1)}
           title="Retour"
-          className="app-no-drag pointer-events-auto flex items-center gap-2 rounded-md bg-surface/85 px-3 py-2.5 text-sm font-medium ring-2 ring-border backdrop-blur-md transition-colors hover:bg-black/60"
+          className="app-no-drag pointer-events-auto flex items-center gap-2 rounded-xl bg-white/[0.05] px-3.5 py-2 text-sm font-medium border border-white/10 backdrop-blur-xl transition hover:bg-white/10 hover:border-white/20"
         >
           <ArrowLeft size={18} /> <span className="hidden sm:inline">Retour</span>
         </button>
       )}
       {!hideSearch && (
       <div ref={boxRef} className="app-no-drag pointer-events-auto relative ml-auto w-full max-w-md">
-        <div className="flex items-center gap-2 rounded-md bg-surface/85 px-3.5 py-2.5 shadow-sm ring-2 ring-border backdrop-blur-md transition focus-within:bg-black/55 focus-within:ring-primary/60">
+        <div className="flex items-center gap-2.5 rounded-2xl bg-white/[0.04] px-4 py-2.5 border border-white/10 backdrop-blur-2xl transition focus-within:border-primary/60 focus-within:bg-black/70 shadow-lg focus-within:shadow-[0_0_20px_rgba(249,115,22,0.2)]">
           <Search size={17} className="text-muted" />
           <input
             ref={inputRef}
@@ -234,17 +234,17 @@ export default function TopBar({ scrolled }) {
         </div>
 
         {showFilters && (
-          <div className="absolute mt-2 w-full overflow-hidden rounded-lg bg-surface/95 p-4 shadow-card ring-1 ring-white/10 backdrop-blur-xl animate-slide-up">
+          <div className="absolute mt-2 w-full overflow-hidden rounded-2xl bg-[#120f18]/95 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 backdrop-blur-2xl animate-slide-up">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">Type</p>
             <div className="mb-4 flex gap-2">
               {TYPE_OPTIONS.map((t) => (
                 <button
                   key={t.value || "all"}
                   onClick={() => setSelType(t.value)}
-                  className={`rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all ${
                     selType === t.value
-                      ? "bg-primary text-primary-fg"
-                      : "bg-white/[0.06] text-text hover:bg-white/[0.1]"
+                      ? "bg-gradient-to-r from-primary to-amber-500 text-white font-bold shadow-[0_0_12px_rgba(249,115,22,0.4)]"
+                      : "bg-white/[0.04] text-text hover:bg-white/[0.09] border border-white/5"
                   }`}
                 >
                   {t.label}
@@ -260,10 +260,10 @@ export default function TopBar({ scrolled }) {
                 <button
                   key={r.value || "any"}
                   onClick={() => setSelEps(r.value)}
-                  className={`rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all ${
                     selEps === r.value
-                      ? "bg-primary text-primary-fg"
-                      : "bg-white/[0.06] text-text hover:bg-white/[0.1]"
+                      ? "bg-gradient-to-r from-primary to-amber-500 text-white font-bold shadow-[0_0_12px_rgba(249,115,22,0.4)]"
+                      : "bg-white/[0.04] text-text hover:bg-white/[0.09] border border-white/5"
                   }`}
                 >
                   {r.label}
@@ -305,7 +305,7 @@ export default function TopBar({ scrolled }) {
               </button>
               <button
                 onClick={runSearch}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-fg transition-transform hover:scale-[1.03]"
+                className="rounded-xl bg-gradient-to-r from-primary to-amber px-5 py-2.5 text-xs font-bold text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-transform hover:scale-[1.03]"
               >
                 Rechercher
               </button>
@@ -315,20 +315,20 @@ export default function TopBar({ scrolled }) {
 
         {/* Masqués quand le panneau de filtres est ouvert. */}
         {open && !showFilters && results.length > 0 && (
-          <div className="absolute mt-2 w-full overflow-hidden rounded-lg bg-surface/95 shadow-card ring-1 ring-white/10 backdrop-blur-xl animate-slide-up">
+          <div className="absolute mt-2 w-full overflow-hidden rounded-2xl bg-[#120f18]/95 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 backdrop-blur-2xl animate-slide-up p-1.5">
             {results.map((a, i) => (
               <button
                 key={a.slug}
                 onClick={() => go(a.slug)}
                 onMouseEnter={() => setActiveIndex(i)}
-                className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-2 ${
-                  i === activeIndex ? "bg-surface-2" : ""
+                className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                  i === activeIndex ? "bg-white/10 text-primary" : "hover:bg-white/[0.05]"
                 }`}
               >
                 {a.image ? (
-                  <img src={a.image} alt="" className="h-12 w-9 shrink-0 rounded object-cover" />
+                  <img src={a.image} alt="" className="h-12 w-9 shrink-0 rounded-lg object-cover shadow" />
                 ) : (
-                  <div className="h-12 w-9 shrink-0 rounded bg-surface-2" />
+                  <div className="h-12 w-9 shrink-0 rounded-lg bg-surface-2" />
                 )}
                 <p className="min-w-0 truncate text-sm font-semibold">{displayTitle(a.slug, a.title)}</p>
               </button>

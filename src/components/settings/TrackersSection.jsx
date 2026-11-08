@@ -60,8 +60,8 @@ function sinceLabel(iso) {
 }
 
 function accountDescription(account, available) {
-  if (!available && !account) return "Pas encore disponible sur Nartya.";
-  if (!account) return "Pas lié. Ce que tu regardes sur Nartya y sera reporté automatiquement.";
+  if (!available && !account) return "Pas encore disponible sur Dayumi.";
+  if (!account) return "Pas lié. Ce que tu regardes sur Dayumi y sera reporté automatiquement.";
   if (account.needs_relink) return "La connexion a expiré : relie ton compte pour reprendre la synchro.";
   const parts = [`Connecté en tant que ${account.username}`];
   if (account.pending > 0) parts.push(`${account.pending} envoi${account.pending > 1 ? "s" : ""} en attente`);
@@ -81,7 +81,7 @@ function importLabel(state) {
   ]
     .filter(([n]) => n > 0)
     .map(([n, one, many]) => `${n} ${n > 1 ? many : one}`);
-  return counts.length ? `Import terminé : ${counts.join(", ")}.` : "Import terminé : tout était déjà sur Nartya.";
+  return counts.length ? `Import terminé : ${counts.join(", ")}.` : "Import terminé : tout était déjà sur Dayumi.";
 }
 
 function ProviderBadge({ id }) {
@@ -205,7 +205,7 @@ export default function TrackersSection({ number }) {
     try {
       awaitingLink.current = true;
       await startTrackerLink(provider.id);
-      toast.info(`Autorise Nartya sur ${provider.label}, puis reviens ici.`);
+      toast.info(`Autorise Dayumi sur ${provider.label}, puis reviens ici.`);
     } catch (e) {
       awaitingLink.current = false;
       toast.error(e.message);
@@ -259,7 +259,7 @@ export default function TrackersSection({ number }) {
       setPrefs((p) => ({ ...p, last_export_at: new Date().toISOString() }));
       setNow(Date.now());
       await refresh();
-      toast.success(queued ? "Ta liste Nartya part vers tes comptes liés." : "Rien à envoyer pour l'instant.");
+      toast.success(queued ? "Ta liste Dayumi part vers tes comptes liés." : "Rien à envoyer pour l'instant.");
     } catch (e) {
       if (e?.message === "tracker_export_cooldown") {
         const wait = Number(e.details) || COOLDOWN_MS / 1000;
@@ -359,7 +359,7 @@ export default function TrackersSection({ number }) {
                 label={`Importer depuis ${provider.label}`}
                 description={
                   importLabel(account.import_state) ||
-                  "Ajoute à Nartya ta liste, tes épisodes vus, tes chapitres lus et tes notes. Rien de ce que tu as déjà n'est remplacé, et ton classement ne compte toujours que ce que tu regardes sur Nartya."
+                  "Ajoute à Dayumi ta liste, tes épisodes vus, tes chapitres lus et tes notes. Rien de ce que tu as déjà n'est remplacé, et ton classement ne compte toujours que ce que tu regardes sur Dayumi."
                 }
               >
                 <button
@@ -377,8 +377,8 @@ export default function TrackersSection({ number }) {
 
           <SettingRow
             icon={CloudUpload}
-            label="Envoyer ma liste Nartya"
-            description="Reporte tout ce que tu as déjà sur Nartya : épisodes vus, statuts, notes et chapitres. Utile juste après avoir lié un compte. Une fois toutes les 10 minutes."
+            label="Envoyer ma liste Dayumi"
+            description="Reporte tout ce que tu as déjà sur Dayumi : épisodes vus, statuts, notes et chapitres. Utile juste après avoir lié un compte. Une fois toutes les 10 minutes."
           >
             <button type="button" disabled={busy === "export" || exportWait > 0} onClick={runExport} className={BUTTON}>
               {busy === "export" && <LoaderCircle size={15} className="animate-spin" />}
@@ -396,7 +396,7 @@ export default function TrackersSection({ number }) {
           onConfirm={() => unlink(confirmUnlink)}
           onClose={() => setConfirmUnlink(null)}
         >
-          Plus rien ne sera envoyé sur ce compte. Ce qui y est déjà reste en place, et ta liste Nartya ne change pas.
+          Plus rien ne sera envoyé sur ce compte. Ce qui y est déjà reste en place, et ta liste Dayumi ne change pas.
         </ConfirmModal>
       )}
     </Section>

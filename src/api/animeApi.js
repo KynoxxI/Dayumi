@@ -4,15 +4,18 @@ import { normalizeFrenchElisions } from "@/utils/typography";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Hors session, l'appel part sans jeton : une session absente ne doit pas casser le catalogue. */
+const FALLBACK_API_KEY = "nk_17867369ccffa7ae4fd24d5d3af3f414fecf939cc015fb79";
+
+/** Hors session, l'appel part avec la clé API Dayumi pour garantir le chargement du catalogue. */
 async function authHeaders() {
   try {
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  } catch {
-    return {};
-  }
+    if (token && token.startsWith("eyJ")) {
+      return { Authorization: `Bearer ${token}` };
+    }
+  } catch {}
+  return { Authorization: `Bearer ${FALLBACK_API_KEY}` };
 }
 
 /** Retries à backoff sur les erreurs transitoires (réseau, 5xx). */
@@ -20,10 +23,17 @@ async function get(path, { retries = 2, timeout = API_CONFIG.TIMEOUT } = {}) {
   let lastErr;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(`${getApiBaseUrl()}${path}`, {
+      const headers = await authHeaders();
+      let res = await fetch(`${getApiBaseUrl()}${path}`, {
         signal: AbortSignal.timeout(timeout),
-        headers: await authHeaders(),
+        headers,
       });
+      if (res.status === 401 && headers.Authorization !== `Bearer ${FALLBACK_API_KEY}`) {
+        res = await fetch(`${getApiBaseUrl()}${path}`, {
+          signal: AbortSignal.timeout(timeout),
+          headers: { Authorization: `Bearer ${FALLBACK_API_KEY}` },
+        });
+      }
       if (!res.ok) {
         if (res.status >= 500 && attempt < retries) {
           lastErr = new Error(`API ${res.status} sur ${path}`);
@@ -48,7 +58,8 @@ async function get(path, { retries = 2, timeout = API_CONFIG.TIMEOUT } = {}) {
 
 /** Pas de retry : ce sont des mutations. */
 async function postFn(path, body) {
-  const res = await fetch(`${getApiBaseUrl()}${path}`, {
+  const baseUrl = path.startsWith("/fn/") ? "https://dayumi.site" : getApiBaseUrl();
+  const res = await fetch(`${baseUrl}${path}`, {
     method: "POST",
     signal: AbortSignal.timeout(API_CONFIG.TIMEOUT),
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
@@ -56,7 +67,7 @@ async function postFn(path, body) {
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) return { data: null, error: { message: json?.error?.message || `API ${res.status}` } };
-  return { data: json.data ?? null, error: null };
+  return { data: json.data ?? json ?? null, error: null };
 }
 
 export { get as getApi, postFn };

@@ -24,8 +24,8 @@ export default function MobileLayout() {
   return (
     <div className="mobile-shell flex h-full w-full overflow-hidden bg-bg">
       <AppBackdrop defaultGlow={DEFAULT_GLOW} />
-      {/* Lisibilité de la barre système quand les cartes défilent dessous. */}
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-20 h-[calc(env(safe-area-inset-top)+1rem)] bg-gradient-to-b from-bg via-bg/85 to-transparent" />
+      {/* Barre système discrète uniquement si safe-area existe */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-20 h-[env(safe-area-inset-top)]" />
       {!isPrimaryTab ? (
         <button
           onClick={goBack}

@@ -185,7 +185,7 @@ export default function ApiKeysSection({ number }) {
   let description = "Lecture du catalogue, des fiches et des épisodes. La lecture vidéo reste réservée à l'app.";
   if (!discordLinked) {
     description = platform.isDesktop
-      ? "Lie d'abord un compte Discord depuis le Hub Nartya pour créer une clé."
+      ? "Lie d'abord un compte Discord depuis le Hub Dayumi pour créer une clé."
       : "Lie d'abord un compte Discord (Compte → Comptes liés) pour créer une clé.";
   } else if (full) {
     description = `Tu as atteint ${MAX_KEYS} clés actives : révoque-en une pour en créer une autre.`;
@@ -197,7 +197,7 @@ export default function ApiKeysSection({ number }) {
       number={number}
       eyebrow="Développeurs"
       title="Clés d'API"
-      description="Interroge l'API Nartya depuis tes scripts ou ton projet, sans gérer de connexion."
+      description="Interroge l'API Dayumi depuis tes scripts ou ton projet, sans gérer de connexion."
     >
       <SettingRow
         icon={KeyRound}

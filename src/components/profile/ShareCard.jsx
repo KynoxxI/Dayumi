@@ -43,8 +43,8 @@ export default function ShareCard({ profile, stats, extra, kanji, posters, banne
       const blob = await new Promise((resolve, reject) => {
         canvasRef.current.toBlob((value) => value ? resolve(value) : reject(new Error("PNG vide")), "image/png");
       });
-      const saved = await saveImage(blob, `nartya-${(profile?.handle || "profil").replace(/[^a-z0-9_-]/gi, "-")}.png`);
-      if (saved === "gallery") toast.success("Carte enregistrée dans Images › Nartya");
+      const saved = await saveImage(blob, `dayumi-${(profile?.handle || "profil").replace(/[^a-z0-9_-]/gi, "-")}.png`);
+      if (saved === "gallery") toast.success("Carte enregistrée dans Images › Dayumi");
     } catch {
       toast.error("Impossible de télécharger la carte. Réessaie dans un instant.");
     } finally {
@@ -54,7 +54,7 @@ export default function ShareCard({ profile, stats, extra, kanji, posters, banne
   return (
     <section className="mt-6 rounded-md bg-surface ring-2 ring-border">
       <div className="flex items-center gap-2 border-b border-border/90 px-4 py-3">
-        <h3 className="section-title !text-xl">Ma carte Nartya</h3>
+        <h3 className="section-title !text-xl">Ma carte Dayumi</h3>
       </div>
       <div className="p-4">
         <div className="relative overflow-hidden rounded-xl bg-bg" style={{ aspectRatio: "4 / 5" }} aria-busy={!rendered}>

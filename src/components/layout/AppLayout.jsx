@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MobileNavigation from "./MobileNavigation";
 import TopBar from "./TopBar";
@@ -14,7 +14,14 @@ const DEFAULT_GLOW = "radial-gradient(80% 50% at 80% -10%, rgb(var(--primary) / 
 export default function AppLayout() {
   const [scrolled, setScrolled] = useState(false);
   const mainRef = useRef(null);
+  const { pathname } = useLocation();
   useScrollRestoration(mainRef);
+
+  const isHeroPage =
+    pathname === "/" ||
+    pathname === "/mangas" ||
+    pathname.startsWith("/anime/") ||
+    pathname.startsWith("/manga/");
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-bg">
@@ -29,8 +36,8 @@ export default function AppLayout() {
       >
         <FeatureBanner />
         <TopBar scrolled={scrolled} />
-        {/* Remonte sous la TopBar transparente. */}
-        <div className="-mt-16">
+        {/* Remonte sous la TopBar transparente uniquement pour les pages à grand hero */}
+        <div className={isHeroPage ? "-mt-16" : "pt-2 md:pt-4"}>
           <Outlet />
         </div>
         <ScrollToTopButton scrollContainerRef={mainRef} />

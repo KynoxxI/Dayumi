@@ -8,11 +8,11 @@ const EFFECTIVE_DATE = "16 juin 2026";
 const SECTIONS = [
   {
     title: "1. Objet",
-    body: "Nartya est une application (ordinateur, Android et iPhone) permettant de parcourir un catalogue d'animes et de mangas, d'en suivre la progression et d'organiser une collection personnelle. En créant un compte ou en utilisant l'application, vous acceptez les présentes conditions d'utilisation.",
+    body: "Dayumi est une application (ordinateur, Android et iPhone) permettant de parcourir un catalogue d'animes et de mangas, d'en suivre la progression et d'organiser une collection personnelle. En créant un compte ou en utilisant l'application, vous acceptez les présentes conditions d'utilisation.",
   },
   {
     title: "2. Nature du service",
-    body: "Nartya n'héberge, ne stocke ni ne diffuse aucun contenu vidéo. L'application agrège des liens et métadonnées provenant de services tiers indépendants. La disponibilité, la qualité et la légalité des contenus relèvent de la seule responsabilité de ces tiers. Nartya peut cesser de fonctionner à tout moment si ces sources évoluent ou deviennent indisponibles.",
+    body: "Dayumi n'héberge, ne stocke ni ne diffuse aucun contenu vidéo. L'application agrège des liens et métadonnées provenant de services tiers indépendants. La disponibilité, la qualité et la légalité des contenus relèvent de la seule responsabilité de ces tiers. Dayumi peut cesser de fonctionner à tout moment si ces sources évoluent ou deviennent indisponibles.",
   },
   {
     title: "3. Compte utilisateur",
@@ -24,15 +24,15 @@ const SECTIONS = [
   },
   {
     title: "5. Propriété intellectuelle",
-    body: "Les animes, marques, visuels et autres contenus restent la propriété de leurs ayants droit respectifs. L'interface, le code et l'identité visuelle de Nartya appartiennent à NartyaTeam et ne peuvent être reproduits sans autorisation.",
+    body: "Les animes, marques, visuels et autres contenus restent la propriété de leurs ayants droit respectifs. L'interface, le code et l'identité visuelle de Dayumi appartiennent à DayumiTeam et ne peuvent être reproduits sans autorisation.",
   },
   {
     title: "6. Données personnelles",
-    body: "Nartya conserve les données strictement nécessaires au service : adresse e-mail ou identifiant Discord selon le mode de connexion, pseudonyme, avatar, profil, favoris, listes et progression de visionnage. Ces données sont hébergées via Supabase et ne sont jamais revendues. Vous pouvez demander la suppression de votre compte et des données associées.",
+    body: "Dayumi conserve les données strictement nécessaires au service : adresse e-mail ou identifiant Discord selon le mode de connexion, pseudonyme, avatar, profil, favoris, listes et progression de visionnage. Ces données sont hébergées via Supabase et ne sont jamais revendues. Vous pouvez demander la suppression de votre compte et des données associées.",
   },
   {
     title: "7. Disponibilité et garanties",
-    body: "L'application est fournie « en l'état », sans garantie de disponibilité, d'exactitude ou d'adéquation à un usage particulier. NartyaTeam ne saurait être tenue responsable des interruptions, pertes de données ou dommages résultant de l'utilisation de l'application ou des contenus tiers.",
+    body: "L'application est fournie « en l'état », sans garantie de disponibilité, d'exactitude ou d'adéquation à un usage particulier. DayumiTeam ne saurait être tenue responsable des interruptions, pertes de données ou dommages résultant de l'utilisation de l'application ou des contenus tiers.",
   },
   {
     title: "8. Modifications",

@@ -8,7 +8,7 @@ import { asset } from "@/lib/asset";
 const TICK_MS = 60 * 1000;
 // Seulement la dernière heure, pour ne pas notifier en rafale au lancement.
 const NOTIFY_WINDOW_MS = 60 * 60 * 1000;
-const NOTIFIED_KEY = "nartya_planning_notified";
+const NOTIFIED_KEY = "dayumi_planning_notified";
 const PRUNE_MS = 8 * 24 * 60 * 60 * 1000;
 
 function loadNotified() {
@@ -69,7 +69,7 @@ export default function ReleaseNotifier() {
 
         try {
           const n = new Notification("Nouvel épisode disponible", {
-            body: `${r.title} — un nouvel épisode vient de sortir sur Nartya`,
+            body: `${r.title} — un nouvel épisode vient de sortir sur Dayumi`,
             icon: r.image || asset("icon.png"),
             tag: key,
           });

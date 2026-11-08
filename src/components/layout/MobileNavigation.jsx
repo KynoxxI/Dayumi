@@ -160,7 +160,7 @@ export default function MobileNavigation({ searchPath = "/recherche", forceVisib
     try {
       const result = await installAppUpdate(updatePolicy);
       if (result?.permissionRequired) {
-        toast.info("Autorise Nartya à installer des APK, puis relance la mise à jour.");
+        toast.info("Autorise Dayumi à installer des APK, puis relance la mise à jour.");
       }
       if (result?.started) setOpen(false);
     } catch (error) {
@@ -222,7 +222,7 @@ export default function MobileNavigation({ searchPath = "/recherche", forceVisib
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="t-impact text-2xl">Explorer Nartya</p>
+                <p className="t-impact text-2xl">Explorer Dayumi</p>
                 <p className="text-xs text-muted">Toutes les destinations</p>
               </div>
               <button

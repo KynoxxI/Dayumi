@@ -73,7 +73,7 @@ export default function BackupSection({ number }) {
       <SettingRow
         icon={Upload}
         label="Importer une sauvegarde"
-        description="Restaure les données d'une sauvegarde Nartya."
+        description="Restaure les données d'une sauvegarde Dayumi."
         details="L'importation fusionne les favoris, listes et progressions sans effacer les données existantes."
       >
         <button

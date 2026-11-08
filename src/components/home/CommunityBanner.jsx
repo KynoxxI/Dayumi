@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import { Fox } from "@/components/brand/NartyaMark";
+import { Fox } from "@/components/brand/DayumiMark";
 import { openDiscord } from "@/lib/community";
 import DiscordIcon from "@/components/icons/DiscordIcon";
 

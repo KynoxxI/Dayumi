@@ -19,16 +19,18 @@ export default {
         amber: "rgb(var(--amber) / <alpha-value>)",
       },
       fontFamily: {
-        display: ['"Zen Maru Gothic"', "sans-serif"],
-        impact: ['"Anton"', "Impact", "sans-serif"],
-        sans: ['"Zen Kaku Gothic Antique"', "system-ui", "sans-serif"],
+        display: ['"Outfit"', '"Zen Maru Gothic"', "sans-serif"],
+        impact: ['"Outfit"', '"Anton"', "Impact", "sans-serif"],
+        sans: ['"Outfit"', '"Zen Kaku Gothic Antique"', "system-ui", "sans-serif"],
       },
       letterSpacing: {
         kana: "0.35em",
       },
       borderRadius: {
-        xl: "0.5rem",
-        "2xl": "0.75rem",
+        lg: "0.75rem",
+        xl: "1rem",
+        "2xl": "1.25rem",
+        "3xl": "1.75rem",
       },
       boxShadow: {
         glow: "0 0 60px -12px rgb(var(--primary) / 0.55)",

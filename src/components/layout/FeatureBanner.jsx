@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { LayoutList, X } from "lucide-react";
 
 // Changer la clé pour réafficher le bandeau avec une nouvelle annonce.
-const DISMISS_KEY = "nartya_banner_tierlists_v1";
+const DISMISS_KEY = "dayumi_banner_tierlists_v1";
 
 function wasDismissed() {
   try {
@@ -43,7 +43,7 @@ export default function FeatureBanner({ className = "" }) {
         <span className="mr-1.5 rounded bg-black px-1.5 py-0.5 text-[0.6rem] font-black uppercase tracking-widest text-white sm:text-[0.65rem]">
           Grosse nouveauté
         </span>
-        <strong>Les tier lists débarquent sur Nartya !</strong>{" "}
+        <strong>Les tier lists débarquent sur Dayumi !</strong>{" "}
         <span className="hidden opacity-90 md:inline">
           Classe tes animes de GOATED à bof, publie ta tier list et fais réagir toute la communauté 🔥
         </span>

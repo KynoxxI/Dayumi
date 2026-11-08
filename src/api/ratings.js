@@ -1,30 +1,73 @@
 import { supabase } from "@/lib/supabase";
+import { dbGetRating, dbSaveRating, getUserId } from "./dayumiDb";
 
-const normalize = (row = {}) => ({
-  average: row.average_rating == null ? null : Number(row.average_rating),
-  count: Number(row.ratings_count || 0),
-  mine: row.my_rating == null ? null : Number(row.my_rating),
-});
+const LOCAL_RATINGS_KEY = "dayumi_local_ratings";
+
+function getLocalRatings() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_RATINGS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalRatings(ratings) {
+  try {
+    localStorage.setItem(LOCAL_RATINGS_KEY, JSON.stringify(ratings));
+  } catch {}
+}
+
+const normalize = (row = {}, localMine = null) => {
+  const mine = row.my_rating == null ? localMine : Number(row.my_rating);
+  const avg = row.average_rating == null ? (mine ?? null) : Number(row.average_rating);
+  const count = Number(row.ratings_count || (mine != null ? 1 : 0));
+  return {
+    average: avg,
+    count,
+    mine,
+  };
+};
 
 export async function getAnimeRatingSummary(slug) {
-  const { data, error } = await supabase.rpc("get_anime_rating_summary", { p_slug: slug });
-  if (error) throw error;
-  return normalize(data?.[0]);
+  const local = getLocalRatings();
+  const localMine = local[slug] != null ? Number(local[slug]) : null;
+  const uid = getUserId();
+  try {
+    const res = await dbGetRating(slug, uid);
+    if (res && (res.count > 0 || res.userRating != null)) {
+      return {
+        average: res.average,
+        count: res.count,
+        mine: res.userRating ?? localMine,
+      };
+    }
+  } catch (_) {}
+  return normalize({}, localMine);
 }
 
 export async function saveAnimeRating(slug, rating) {
-  const { data, error } = await supabase.rpc("upsert_anime_rating", {
-    p_slug: slug,
-    p_rating: rating,
-  });
-  if (error) throw error;
-  return Number(data);
+  const local = getLocalRatings();
+  local[slug] = Number(rating);
+  saveLocalRatings(local);
+
+  const uid = getUserId();
+  try {
+    await dbSaveRating({ animeSlug: slug, score: rating, userId: uid });
+  } catch (err) {
+    console.warn("[ratings] save BDD échoué :", err?.message || err);
+  }
+  return Number(rating);
 }
 
 export async function removeAnimeRating(slug) {
-  const { data, error } = await supabase.rpc("delete_anime_rating", { p_slug: slug });
-  if (error) throw error;
-  return !!data;
+  const local = getLocalRatings();
+  delete local[slug];
+  saveLocalRatings(local);
+
+  try {
+    await supabase.rpc("delete_anime_rating", { p_slug: slug });
+  } catch (_) {}
+  return true;
 }
 
 export function ratingErrorMessage(error) {

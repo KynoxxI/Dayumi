@@ -42,8 +42,8 @@ export default function SignOutModal({ onClose }) {
       setBusy(false);
       setError(
         res?.stale
-          ? "L'app doit être redémarrée pour appliquer la mise à jour de la déconnexion. Tu es déconnecté : ferme et rouvre Nartya."
-          : "Nartya Hub est introuvable sur cet appareil. Tu es déconnecté : lance le Hub manuellement pour te reconnecter."
+          ? "L'app doit être redémarrée pour appliquer la mise à jour de la déconnexion. Tu es déconnecté : ferme et rouvre Dayumi."
+          : "Dayumi Hub est introuvable sur cet appareil. Tu es déconnecté : lance le Hub manuellement pour te reconnecter."
       );
       return;
     }
@@ -79,12 +79,12 @@ export default function SignOutModal({ onClose }) {
           <p className="text-sm leading-relaxed text-text/90">
             {isDesktop ? (
               <>
-                Ta session est partagée avec <strong className="font-semibold">Nartya Hub</strong>.
-                En te déconnectant, <strong className="font-semibold">Nartya se fermera</strong> et
+                Ta session est partagée avec <strong className="font-semibold">Dayumi Hub</strong>.
+                En te déconnectant, <strong className="font-semibold">Dayumi se fermera</strong> et
                 le Hub s'ouvrira sur sa page de connexion.
               </>
             ) : (
-              <>Tu vas être déconnecté de ton compte Nartya.</>
+              <>Tu vas être déconnecté de ton compte Dayumi.</>
             )}
           </p>
 

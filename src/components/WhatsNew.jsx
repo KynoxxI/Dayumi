@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { Fox } from "@/components/brand/NartyaMark";
+import { Fox } from "@/components/brand/DayumiMark";
 import ChangelogList from "@/components/changelog/ChangelogList";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { platform } from "@/platform";
@@ -20,7 +20,7 @@ import { compareVersions } from "@/lib/semver";
  */
 
 // Pour que « Découvre le Hub » n'ouvre pas sa modale par-dessus.
-const WHATSNEW_DONE_EVENT = "nartya:whatsnew-done";
+const WHATSNEW_DONE_EVENT = "dayumi:whatsnew-done";
 const signalDone = () => window.dispatchEvent(new Event(WHATSNEW_DONE_EVENT));
 
 export default function WhatsNew() {

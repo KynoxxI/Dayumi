@@ -43,8 +43,8 @@ export default function BanScreen({ kind, reason, until }) {
       title={isMachine ? "Appareil banni" : "Compte suspendu"}
       description={
         isMachine
-          ? "Cet appareil a été banni de Nartya. L'accès reste bloqué même après un changement de compte."
-          : "Ton accès à Nartya a été suspendu."
+          ? "Cet appareil a été banni de Dayumi. L'accès reste bloqué même après un changement de compte."
+          : "Ton accès à Dayumi a été suspendu."
       }
       actions={
         // Il faut une sortie pour changer de compte : sur le bureau, elle mène au hub.

@@ -45,17 +45,17 @@ function HeroSlide({ anime, contentType, isActive, shouldLoad, onOpen, onPrimary
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent md:via-bg/35" />
       <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/30 to-transparent md:from-bg/95 md:via-bg/40" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/35 to-transparent md:from-bg/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent" />
 
       <div className="slash-rule absolute inset-x-0 bottom-0 z-[2] hidden md:block" />
       <div className="absolute inset-0 flex items-end">
         <div
-          className={`mx-auto w-full max-w-2xl px-5 pb-6 text-center md:mx-0 md:px-14 md:pb-20 md:text-left ${
+          className={`mx-auto w-full max-w-2xl px-5 pb-6 pt-16 text-center md:mx-0 md:px-14 md:pb-12 md:pt-28 md:text-left ${
             isActive ? "animate-slide-up" : "opacity-0"
           }`}
         >
-          <p className="mb-3 flex items-center justify-center gap-2.5 text-[0.65rem] font-bold uppercase tracking-[0.25em] text-white/65 md:mb-4 md:justify-start md:text-[0.7rem] md:text-muted">
-            <span className="h-3.5 w-[6px] -skew-x-[14deg] bg-primary" />
+          <p className="mb-3 flex items-center justify-center gap-2.5 text-[0.65rem] font-bold uppercase tracking-[0.25em] text-white/70 md:mb-4 md:justify-start md:text-[0.7rem] md:text-muted">
+            <span className="h-2.5 w-2.5 bg-gradient-to-tr from-primary to-accent [clip-path:polygon(50%_0%,100%_50%,50%_100%,0%_50%)] shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
             {isManga ? "Manga à la une" : "À la une"}
           </p>
 
@@ -91,7 +91,7 @@ function HeroSlide({ anime, contentType, isActive, shouldLoad, onOpen, onPrimary
             {isManga && anime.volumes && <span>{anime.volumes} vol.</span>}
             <span className="flex gap-2">
               {anime.genres?.slice(0, 3).map((g) => (
-                <span key={g} className="rounded bg-white/[0.08] px-2.5 py-0.5 text-xs text-text">
+                <span key={g} className="rounded-xl bg-white/[0.05] px-3 py-1 text-xs text-text border border-white/10 backdrop-blur-md">
                   {g}
                 </span>
               ))}
@@ -195,7 +195,7 @@ export default function HeroCarousel({ items, contentType = "anime" }) {
   return (
     <div
       ref={rootRef}
-      className="relative w-full px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] md:h-[70vh] md:min-h-[500px] md:px-0 md:pt-0"
+      className="relative w-full px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] md:h-[72vh] md:min-h-[560px] md:px-0 md:pt-0"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >

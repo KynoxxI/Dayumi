@@ -211,7 +211,7 @@ export default function AnimePage() {
     genre: genres[0],
     mediaType,
   });
-  // Rangée « Recommandé par la communauté » : animes regardables sur Nartya seulement.
+  // Rangée « Recommandé par la communauté » : animes regardables sur Dayumi seulement.
   const canBump = !!streamingSlug && !isManga;
   const bump = useAnimeBump(canBump ? streamingSlug : null, { title, cover });
   const bumpLabel = bump.bumped ? "Retirer ma recommandation" : "Recommander à la communauté";

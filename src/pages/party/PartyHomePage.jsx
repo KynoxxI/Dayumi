@@ -122,7 +122,7 @@ export default function PartyHomePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-6 md:pt-8 pb-16">
       <div className="mb-8 flex items-center gap-3">
         <Users className="text-primary" size={28} />
         <div>

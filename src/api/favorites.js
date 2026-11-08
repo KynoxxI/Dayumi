@@ -2,6 +2,23 @@ import { supabase } from "@/lib/supabase";
 import { isGuestSession } from "@/lib/guest";
 import { invalidateCache } from "@/hooks/useCachedResource";
 import { getAnimePage } from "@/api/animeApi";
+import { dbListFavorites, dbAddFavorite, dbRemoveFavorite, getUserId } from "./dayumiDb";
+
+const LOCAL_FAVS_KEY = "dayumi_local_favorites";
+
+export function getLocalFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_FAVS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalFavorites(items) {
+  try {
+    localStorage.setItem(LOCAL_FAVS_KEY, JSON.stringify(items));
+  } catch {}
+}
 
 function invalidateFavoriteProfileData() {
   invalidateCache("profile:favorites:");
@@ -10,31 +27,65 @@ function invalidateFavoriteProfileData() {
 
 /** `sort_order` (tri manuel) quand il est posé, sinon par ajout récent. */
 export async function listFavorites() {
-  const { data, error } = await supabase
-    .from("favorites")
-    .select("*")
-    .order("sort_order", { ascending: true, nullsFirst: false })
-    .order("added_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  const local = getLocalFavorites();
+  const uid = getUserId();
+  try {
+    const dbRows = await dbListFavorites(uid);
+    const remote = (dbRows || []).map((r) => ({
+      anime_slug: r.anime_slug,
+      media_type: r.media_type || "anime",
+      anime_title: r.title || r.anime_title || null,
+      anime_cover: r.cover || r.anime_cover || null,
+      added_at: r.created_at || r.added_at,
+    }));
+    // Fusionner les favoris locaux s'ils ne sont pas déjà dans la base
+    const seen = new Set(remote.map((r) => r.anime_slug));
+    const merged = [...remote];
+    for (const item of local) {
+      if (!seen.has(item.anime_slug)) {
+        merged.push(item);
+      }
+    }
+    return merged;
+  } catch (e) {
+    console.warn("[favorites] listFavorites fallback local:", e?.message || e);
+    return local;
+  }
 }
 
 /** Du plus prioritaire au moins prioritaire. */
 export async function reorderFavorites(slugs) {
-  if (isGuestSession() || !slugs?.length) return;
-  const { error } = await supabase.rpc("reorder_favorites", { p_slugs: slugs });
-  if (error) throw error;
+  const local = getLocalFavorites();
+  const slugIndex = new Map(slugs.map((s, idx) => [s, idx]));
+  local.sort((a, b) => {
+    const ia = slugIndex.has(a.anime_slug) ? slugIndex.get(a.anime_slug) : 9999;
+    const ib = slugIndex.has(b.anime_slug) ? slugIndex.get(b.anime_slug) : 9999;
+    return ia - ib;
+  });
+  saveLocalFavorites(local);
+
+  try {
+    if (!isGuestSession() && slugs?.length) {
+      await supabase.rpc("reorder_favorites", { p_slugs: slugs });
+    }
+  } catch (_) {}
   invalidateFavoriteProfileData();
 }
 
 export async function isFavorite(slug) {
-  const { data, error } = await supabase
-    .from("favorites")
-    .select("anime_slug")
-    .eq("anime_slug", slug)
-    .maybeSingle();
-  if (error) throw error;
-  return !!data;
+  const local = getLocalFavorites();
+  if (local.some((item) => item.anime_slug === slug)) return true;
+  try {
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("anime_slug")
+      .eq("anime_slug", slug)
+      .maybeSingle();
+    if (error) return false;
+    return !!data;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -42,23 +93,38 @@ export async function isFavorite(slug) {
  * l'onglet Mangas ; omis, la colonne garde sa valeur (« anime » par défaut).
  */
 export async function addFavorite({ slug, title, cover, genre, mediaType }) {
-  if (isGuestSession()) return;
-  const { data: auth } = await supabase.auth.getUser();
-  const userId = auth?.user?.id;
-  if (!userId) throw new Error("Non connecté");
-  const { error } = await supabase.from("favorites").upsert(
-    {
-      user_id: userId,
-      anime_slug: slug,
-      anime_title: title || null,
-      anime_cover: cover || null,
-      genre: genre || null,
-      ...(mediaType && { media_type: mediaType }),
-    },
-    { onConflict: "user_id,anime_slug" }
-  );
-  if (error) throw error;
+  // 1. Sauvegarde locale garantie (fonctionne toujours, même déconnecté ou erreur 401)
+  const local = getLocalFavorites();
+  const existingIdx = local.findIndex((item) => item.anime_slug === slug);
+  const localItem = {
+    anime_slug: slug,
+    anime_title: title || null,
+    anime_cover: cover || null,
+    genre: genre || null,
+    media_type: mediaType || "anime",
+    added_at: new Date().toISOString(),
+  };
+  if (existingIdx >= 0) local[existingIdx] = { ...local[existingIdx], ...localItem };
+  else local.unshift(localItem);
+  saveLocalFavorites(local);
   invalidateFavoriteProfileData();
+
+  // 2. Synchronisation BDD Dayumi MariaDB
+  try {
+    const uid = getUserId();
+    if (uid && uid !== "guest_user") {
+      await dbAddFavorite({
+        userId: uid,
+        slug,
+        mediaType: mediaType || "anime",
+        title: title || "",
+        cover: cover || "",
+      });
+    }
+  } catch (err) {
+    console.warn("[favorites] addFavorite BDD échoué :", err?.message || err);
+  }
+
   if (!genre) backfillFavoriteGenre(slug);
 }
 
@@ -67,6 +133,12 @@ async function backfillFavoriteGenre(slug) {
     const { anilist } = await getAnimePage(slug);
     const genre = anilist?.genres?.[0];
     if (!genre) return;
+    const local = getLocalFavorites();
+    const item = local.find((i) => i.anime_slug === slug);
+    if (item && !item.genre) {
+      item.genre = genre;
+      saveLocalFavorites(local);
+    }
     const { error } = await supabase.from("favorites").update({ genre }).eq("anime_slug", slug);
     if (!error) invalidateFavoriteProfileData();
   } catch {
@@ -75,10 +147,20 @@ async function backfillFavoriteGenre(slug) {
 }
 
 export async function removeFavorite(slug) {
-  if (isGuestSession()) return;
-  const { error } = await supabase.from("favorites").delete().eq("anime_slug", slug);
-  if (error) throw error;
+  // 1. Suppression locale garantie
+  const local = getLocalFavorites().filter((item) => item.anime_slug !== slug);
+  saveLocalFavorites(local);
   invalidateFavoriteProfileData();
+
+  // 2. Suppression BDD Dayumi MariaDB
+  try {
+    const uid = getUserId();
+    if (uid && uid !== "guest_user") {
+      await dbRemoveFavorite({ userId: uid, slug });
+    }
+  } catch (err) {
+    console.warn("[favorites] removeFavorite BDD échoué :", err?.message || err);
+  }
 }
 
 /** Idempotent (rafraîchit la date). */

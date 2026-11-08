@@ -1,5 +1,5 @@
 import { ListVideo, SlidersHorizontal } from "lucide-react";
-import NartyaNote from "@/components/ui/NartyaNote";
+import DayumiNote from "@/components/ui/DayumiNote";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 
 /** Affichée une fois : retrait du bouton « épisode précédent », sélecteur de source en option. */
@@ -8,7 +8,7 @@ export default function PlayerControlsNotice({ onClose }) {
   const setSetting = useSettingsStore((state) => state.setSetting);
 
   return (
-    <NartyaNote title="Le lecteur s'allège un peu" onClose={onClose}>
+    <DayumiNote title="Le lecteur s'allège un peu" onClose={onClose}>
       {/* Compense le demi-interligne de `leading-relaxed`. */}
       <ul className="flex flex-col gap-3.5">
         <li className="flex items-start gap-3">
@@ -60,6 +60,6 @@ export default function PlayerControlsNotice({ onClose }) {
           </div>
         </li>
       </ul>
-    </NartyaNote>
+    </DayumiNote>
   );
 }

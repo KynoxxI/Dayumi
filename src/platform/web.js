@@ -1,12 +1,26 @@
-const noop = () => {};
+const noop = () => { };
 
 export const webPlatform = {
   name: "web",
+  isElectron: false,
   os: null,
   isMobile: false,
   isDesktop: false,
   getMachineId: async () => null,
-  resolveStream: async () => ({ success: false, error: "Lecteur disponible uniquement dans l'app Nartya" }),
+  resolveStream: async (payload = {}) => {
+    const { token, apiBaseUrl } = payload;
+    if (!token) return { success: false, error: "Jeton manquant" };
+    try {
+      const base = apiBaseUrl || (typeof window !== "undefined" ? window.location.origin : "https://dayumi.site");
+      const res = await fetch(`${base}/v1/resolve-stream?token=${encodeURIComponent(token)}`, {
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) return { success: false, error: `Erreur serveur (${res.status})` };
+      return await res.json();
+    } catch (e) {
+      return { success: false, error: e?.message || "Erreur de résolution" };
+    }
+  },
   downloads: null,
   session: null,
   cast: null,

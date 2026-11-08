@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Fox } from "@/components/brand/NartyaMark";
+import { Fox } from "@/components/brand/DayumiMark";
 import { getHomeSections } from "@/api/animeApi";
 import { useCachedResource } from "@/hooks/useCachedResource";
 import HeroCarousel from "@/components/home/HeroCarousel";

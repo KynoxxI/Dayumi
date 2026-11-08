@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
-import { Fox } from "@/components/brand/NartyaMark";
+import { Fox, DayumiEmblem } from "@/components/brand/DayumiMark";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useBanStore } from "@/stores/useBanStore";
@@ -211,11 +211,26 @@ export default function App() {
     if (session?.user?.id && !session.user.is_anonymous) ensureFavoritesLoaded();
   }, [session?.user?.id, session?.user?.is_anonymous, ensureFavoritesLoaded]);
 
+  // Sur desktop, si la session est absente et le chargement terminé, renvoyer immédiatement vers /login
+  useEffect(() => {
+    if (!platform.isElectron || loading) return;
+    if (!session && location.pathname !== "/login" && !location.pathname.startsWith("/party")) {
+      navigate("/login", { replace: true });
+    }
+  }, [loading, session, location.pathname, navigate]);
+
   if (loading) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-6 bg-bg">
-        <Fox className="h-24 w-24 animate-pulse text-primary" />
-        <div className="h-7 w-7 animate-spin rounded-full border-2 border-border border-t-primary" />
+        <DayumiEmblem
+          variant={platform.isElectron ? "hub" : "anime"}
+          className="h-24 w-24 animate-pulse"
+        />
+        <div
+          className={`h-7 w-7 animate-spin rounded-full border-2 border-border ${
+            platform.isElectron ? "border-t-purple-500" : "border-t-primary"
+          }`}
+        />
       </div>
     );
   }
@@ -236,22 +251,28 @@ export default function App() {
     return <BanScreen kind={banKind} reason={banReason} until={banUntil} />;
   }
 
+  const isPartyRoute = location.pathname.startsWith("/party");
+
   return (
     <UpdatePolicyProvider value={versionGate}>
       <WatchPartyProvider>
-      <Suspense fallback={null}>
-        <WhatsNew />
-      </Suspense>
-      {!platform.isMobile && (
-        <Suspense fallback={null}>
-          <DiscordPresence />
-          <MilestoneGift />
-          <AnnouncementNotifier />
-          <AnnouncementsPanel />
-          <DiscoverHub />
-        </Suspense>
+      {!isPartyRoute && (
+        <>
+          <Suspense fallback={null}>
+            <WhatsNew />
+          </Suspense>
+          {!platform.isMobile && (
+            <Suspense fallback={null}>
+              <DiscordPresence />
+              <MilestoneGift />
+              <AnnouncementNotifier />
+              <AnnouncementsPanel />
+              <DiscoverHub />
+            </Suspense>
+          )}
+          <OfflineBanner />
+        </>
       )}
-      <OfflineBanner />
       {/* Hors des routes : `signOut()` démonte la route courante, la modale doit y survivre. */}
       {signOutModalOpen && <SignOutModal onClose={hideSignOutModal} />}
       <Suspense fallback={null}>
@@ -282,11 +303,7 @@ export default function App() {
       />
       <Route
         path="/party/:code"
-        element={
-          <ProtectedRoute requireAccount feature="party">
-            <PartyRoomPage />
-          </ProtectedRoute>
-        }
+        element={<PartyRoomPage />}
       />
       <Route
         element={
@@ -335,11 +352,7 @@ export default function App() {
         />
         <Route
           path="/party"
-          element={
-            <ProtectedRoute requireAccount feature="party">
-              <PartyHomePage />
-            </ProtectedRoute>
-          }
+          element={<PartyHomePage />}
         />
         <Route
           path="/favorites"

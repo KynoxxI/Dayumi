@@ -56,7 +56,7 @@ function DownloadDirRow() {
           <p className="text-sm font-semibold text-text">Dossier de téléchargement</p>
           <p className="mt-1.5 text-xs leading-5 text-muted">
             {platform.isMobile
-              ? "Les épisodes sont conservés dans le stockage privé de Nartya : ils ne sont visibles et lisibles que depuis l'app."
+              ? "Les épisodes sont conservés dans le stockage privé de Dayumi : ils ne sont visibles et lisibles que depuis l'app."
               : "Choisis où conserver les épisodes hors ligne."}
           </p>
           <p

@@ -130,7 +130,7 @@ export default function AnimeRatingButton({ slug, title, summary, onSummaryChang
               <Dialog.Close className="absolute right-4 top-4 rounded-md p-1.5 text-muted transition-colors hover:bg-white/[0.06] hover:text-text">
                 <X size={17} />
               </Dialog.Close>
-              <p className="eyebrow">Note Nartya</p>
+              <p className="eyebrow">Note Dayumi</p>
               <Dialog.Title className="mt-2 font-display text-2xl font-bold">Tu lui donnes combien ?</Dialog.Title>
               <Dialog.Description className="mx-auto mt-1 max-w-xs truncate text-sm text-muted">
                 {title}

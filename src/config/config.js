@@ -3,7 +3,7 @@ import { API_URL } from "@/config/instance";
 
 export const API_CONFIG = {
   DEV_BASE_URL: "http://localhost:3000",
-  PROD_BASE_URL: import.meta.env?.VITE_API_URL || API_URL,
+  PROD_BASE_URL: "https://dayumi.site",
   TIMEOUT: 30000,
 };
 

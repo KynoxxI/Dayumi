@@ -62,7 +62,7 @@ function AnnouncementItem({ announcement, onDismiss, onOpen }) {
         <button onClick={() => onOpen(a)} className="min-w-0 text-left">
           <span className="flex min-w-0 items-baseline gap-2 pr-6">
             <span className="line-clamp-1 min-w-0 flex-1 text-sm font-semibold text-text">
-              {a.title || "Annonce Nartya"}
+              {a.title || "Annonce Dayumi"}
             </span>
             <span className="shrink-0 text-[0.65rem] text-muted/70">
               {formatDistanceToNow(new Date(a.createdAt), { addSuffix: true, locale: fr })}
@@ -264,7 +264,7 @@ export default function AnnouncementsPanel() {
               <p className="mt-1 max-w-56 text-xs leading-5 text-muted">
                 {filter === "unread"
                   ? "Les nouvelles annonces apparaîtront ici."
-                  : "Les actualités importantes de Nartya apparaîtront ici."}
+                  : "Les actualités importantes de Dayumi apparaîtront ici."}
               </p>
             </div>
           )}

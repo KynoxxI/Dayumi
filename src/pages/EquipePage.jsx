@@ -8,45 +8,30 @@ import { getTeamRoster, resolveAvatar } from "@/api/profile";
 
 /** Par handle. Un membre absent a un traitement « staff » générique. */
 const TEAM_META = {
-  zeleff_: {
+  kynoxx052: {
     order: 0,
-    title: "Développeur principal",
-    kanji: "朱",
+    title: "Fondateur & Développeur",
+    kanji: "👑",
     rgb: "255 113 62",
     blurb:
-      "Le développeur principal de Dayumi. Écrit le code, casse le code, répare le code — souvent le même jour, parfois entre deux épisodes qu'il regarde soi-disant « pour tester le lecteur ».",
+      "Fondateur et créateur de Dayumi. Gère le développement, l'infrastructure, la communauté et l'ensemble de l'écosystème.",
   },
-  "007": {
-    order: 1,
-    title: "Développeur secondaire",
-    kanji: "刀",
-    rgb: "245 158 11",
+  kynoxx: {
+    order: 0,
+    title: "Fondateur & Développeur",
+    kanji: "👑",
+    rgb: "255 113 62",
     blurb:
-      "Développeur secondaire, complice de code de Zeleff_ : aussi doué pour livrer des fonctionnalités que pour dénicher les bugs qu'on aurait préféré ne jamais croiser.",
-  },
-  "001": {
-    order: 2,
-    title: "Chef de projet & communauté",
-    kanji: "光",
-    rgb: "56 189 248",
-    blurb:
-      "Gère le Discord, les réseaux et l'image de Dayumi — le visage public d'un projet mené par deux développeurs qui préfèrent rester dans leur terminal.",
-  },
-  end: {
-    order: 3,
-    title: "Responsable de la modération",
-    kanji: "影",
-    rgb: "168 85 247",
-    blurb: "Responsable de la modération. Rien ne lui échappe sur les commentaires.",
+      "Fondateur et créateur de Dayumi. Gère le développement, l'infrastructure, la communauté et l'ensemble de l'écosystème.",
   },
 };
 
 const STAFF_FALLBACK = {
   order: 99,
-  title: "Membre du staff",
-  kanji: "星",
-  rgb: "52 211 153",
-  blurb: "Membre du staff Dayumi, présent pour que tout tourne rond — un commentaire signalé ou un bug remonté à la fois.",
+  title: "Membre de l'équipe",
+  kanji: "💎",
+  rgb: "255 113 62",
+  blurb: "Membre de l'équipe Dayumi, présent pour faire tourner l'application et la communauté.",
 };
 
 function metaFor(member) {

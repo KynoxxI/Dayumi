@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, partyClient } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { premiumTier, partyCapacityForTier } from "@/lib/premium";
 import { generatePartyCode, normalizePartyCode, isValidPartyCode } from "@/utils/partyCode";
@@ -26,9 +26,28 @@ const WAIT_SOURCES_TIMEOUT_MS = 30000;
 // Entre deux pauses provoquées par un décrochage.
 const BUFFER_WAIT_COOLDOWN_MS = 20000;
 // Avant de conclure qu'un code ne correspond à aucun salon.
-const JOIN_PROBE_MS = 2500;
+const JOIN_PROBE_MS = 6000;
 // Un salon public muet depuis 75 s sort de la liste (cf. `party_list_public_rooms`).
 const PUBLIC_BEAT_MS = 30000;
+
+function getGuestIdentity() {
+  if (typeof window === "undefined") return { id: "guest_anon", name: "Invité" };
+  try {
+    let gid = sessionStorage.getItem("dayumi_guest_id");
+    let gname = sessionStorage.getItem("dayumi_guest_name");
+    if (!gid) {
+      gid = "guest_" + Math.random().toString(36).slice(2, 8);
+      sessionStorage.setItem("dayumi_guest_id", gid);
+    }
+    if (!gname) {
+      gname = "Invité-" + gid.slice(-4).toUpperCase();
+      sessionStorage.setItem("dayumi_guest_name", gname);
+    }
+    return { id: gid, name: gname };
+  } catch {
+    return { id: "guest_anon", name: "Invité" };
+  }
+}
 
 export const DEFAULT_OPTIONS = {
   isPublic: false, // listé sur la page Watch Party, rejoignable sans code
@@ -93,12 +112,17 @@ export function useWatchParty() {
   const localPlaybackRef = useRef(null);
   const subscribedOnceRef = useRef(false);
 
+  const guest = getGuestIdentity();
+  const effectiveUserId = userId || guest.id;
+  const effectiveUsername = profile?.username || guest.name;
+
   const me = {
     clientId: clientIdRef.current,
-    userId,
-    username: profile?.username || "Invité",
+    userId: effectiveUserId,
+    username: effectiveUsername,
     avatar: resolveAvatar(profile),
     premium: premiumTier(profile),
+    isGuest: !userId,
   };
   const meRef = useRef(me);
   meRef.current = me;
@@ -290,7 +314,7 @@ export function useWatchParty() {
     (roomCode, asHost) =>
       new Promise((resolve) => {
         roomCodeRef.current = roomCode;
-        const channel = supabase.channel(CHANNEL_PREFIX + roomCode, {
+        const channel = partyClient.channel(CHANNEL_PREFIX + roomCode, {
           config: { broadcast: { self: false }, presence: { key: meRef.current.clientId } },
         });
         channelRef.current = channel;
@@ -481,10 +505,16 @@ export function useWatchParty() {
                 channel.send({ type: "broadcast", event: "options", payload: optionsRef.current });
               }
               resolve({ success: true });
-            } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-              // `CLOSED` arrive aussi sur un teardown volontaire.
+            } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
               clearTimeout(subscribeTimer);
-              resolve({ success: false, error: "Connexion au salon impossible." });
+              if (!subscribedOnceRef.current) {
+                resolve({ success: false, error: "Connexion au salon impossible." });
+              }
+            } else if (status === "CLOSED") {
+              clearTimeout(subscribeTimer);
+              if (!subscribedOnceRef.current) {
+                resolve({ success: false, error: "Connexion au salon impossible." });
+              }
             }
           });
       }),
@@ -496,7 +526,7 @@ export function useWatchParty() {
     const participantCount = Object.keys(channel?.presenceState?.() || {}).length;
     if (channel) {
       try { channel.untrack(); } catch (_) {}
-      supabase.removeChannel(channel);
+      partyClient.removeChannel(channel);
     }
     if (clockPingTimerRef.current) {
       clearInterval(clockPingTimerRef.current);
@@ -506,8 +536,8 @@ export function useWatchParty() {
       clearTimeout(waitTimerRef.current);
       waitTimerRef.current = null;
     }
-    // Dernier présent à partir : on efface l'état persisté.
-    if (isHostRef.current && roomCodeRef.current && participantCount <= 1) {
+    // Dernier présent à partir : on efface l'état persisté si le salon est totalement vide.
+    if (isHostRef.current && roomCodeRef.current && participantCount === 0) {
       closePartyRoom(roomCodeRef.current);
     }
     channelRef.current = null;
@@ -567,7 +597,7 @@ export function useWatchParty() {
 
   const createRoom = useCallback(
     async ({ seed = null, isPublic = false } = {}) => {
-      if (!userId) return { success: false, error: "Connexion requise." };
+      if (!effectiveUserId) return { success: false, error: "Connexion requise." };
       setError(null);
       setRoomFull(false);
       setRoomNotFound(false);
@@ -596,7 +626,6 @@ export function useWatchParty() {
 
   const joinRoom = useCallback(
     async (rawCode) => {
-      if (!userId) return { success: false, error: "Connexion requise." };
       const roomCode = normalizePartyCode(rawCode);
       if (!isValidPartyCode(roomCode)) return { success: false, error: "Code invalide (6 caractères alphanumériques)." };
       setError(null);
@@ -613,7 +642,7 @@ export function useWatchParty() {
       probeRoomExists(roomCode);
       return { success: true, code: roomCode };
     },
-    [userId, openChannel, teardown, probeRoomExists]
+    [openChannel, teardown, probeRoomExists]
   );
 
   const leaveRoom = useCallback(() => {
@@ -787,6 +816,17 @@ export function useWatchParty() {
     };
   }, [inRoom, isHost, code, isPublic, participantCount]);
 
+  const setGuestNickname = useCallback((name) => {
+    const clean = String(name || "").trim().slice(0, 24);
+    if (!clean) return;
+    try { sessionStorage.setItem("dayumi_guest_name", clean); } catch {}
+    meRef.current.username = clean;
+    if (channelRef.current) {
+      channelRef.current.track({ ...meRef.current, joinedAt: joinedAtRef.current });
+    }
+    syncPresence();
+  }, [syncPresence]);
+
   useEffect(() => () => teardown(), [teardown]);
 
   return {
@@ -794,7 +834,7 @@ export function useWatchParty() {
     current, queue, remoteState, roomFull, roomNotFound, clockOffsetMs,
     options, sourceStatus, waitingForSources, langChanging, sourcePin,
     me,
-    createRoom, joinRoom, leaveRoom,
+    createRoom, joinRoom, leaveRoom, setGuestNickname,
     emitPlayback, setCurrent, setQueue, updateHostState,
     setOptions, reportSourceStatus, emitLangChanging,
     pinSource, reportLocalPlayback,

@@ -6,7 +6,7 @@ import AnimeCard from "@/components/home/AnimeCard";
 const GRID_CLASS =
   "grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] sm:gap-x-5 sm:gap-y-8";
 
-/** D'après AniList, disponibles sur Nartya. Chargé à l'ouverture de l'onglet. */
+/** D'après AniList, disponibles sur Dayumi. Chargé à l'ouverture de l'onglet. */
 export function RecommendationsSection({ slug }) {
   const { data, loading } = useCachedResource(
     slug ? `anime-recs:${slug}` : null,

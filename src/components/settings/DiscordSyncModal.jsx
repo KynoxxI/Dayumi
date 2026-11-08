@@ -49,7 +49,7 @@ export default function DiscordSyncModal({ offer, pending, onConfirm, onCancel }
             Utiliser tes visuels Discord ?
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Choisis ce que Nartya doit importer. Chaque élément sélectionné remplacera son équivalent actuel.
+            Choisis ce que Dayumi doit importer. Chaque élément sélectionné remplacera son équivalent actuel.
           </p>
         </header>
 
@@ -77,7 +77,7 @@ export default function DiscordSyncModal({ offer, pending, onConfirm, onCancel }
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-text">Photo de profil Discord</span>
                 <span className="mt-0.5 block text-xs text-muted">
-                  {offer.avatarWillReplace ? "Remplacera ta photo Nartya actuelle" : "Sera ajoutée à ton profil"}
+                  {offer.avatarWillReplace ? "Remplacera ta photo Dayumi actuelle" : "Sera ajoutée à ton profil"}
                 </span>
               </span>
               <span
@@ -110,7 +110,7 @@ export default function DiscordSyncModal({ offer, pending, onConfirm, onCancel }
               <span className="relative min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-white">Bannière Discord</span>
                 <span className="mt-0.5 block text-xs text-white/60">
-                  {offer.bannerWillReplace ? "Remplacera ta bannière Nartya actuelle" : "Sera ajoutée à ton profil"}
+                  {offer.bannerWillReplace ? "Remplacera ta bannière Dayumi actuelle" : "Sera ajoutée à ton profil"}
                 </span>
               </span>
               <span
@@ -124,7 +124,7 @@ export default function DiscordSyncModal({ offer, pending, onConfirm, onCancel }
           )}
 
           <p className="pt-2 text-[0.68rem] leading-relaxed text-muted/75">
-            Le remplacement ne modifie rien sur Discord. Il change uniquement les visuels affichés sur Nartya.
+            Le remplacement ne modifie rien sur Discord. Il change uniquement les visuels affichés sur Dayumi.
           </p>
         </div>
 
