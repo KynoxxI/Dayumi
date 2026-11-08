@@ -5,6 +5,21 @@
  */
 export const MOBILE_CHANGELOG = [
   {
+    version: "1.43.0",
+    date: "8 novembre 2026",
+    items: [
+      {
+        type: "new",
+        text: "🎵 Sortie officielle de Dayumi FM : Toute votre musique à la demande et radios sans pub, avec synchronisation de profil et de compte.",
+      },
+      {
+        type: "new",
+        text: "✨ Écosystème Dayumi : Logo officiel Cristal Or 3D et harmonisation complète du design Nuit Obsidienne.",
+      },
+    ],
+  },
+
+  {
     version: "1.6.0",
     date: "22 octobre 2026",
     items: [

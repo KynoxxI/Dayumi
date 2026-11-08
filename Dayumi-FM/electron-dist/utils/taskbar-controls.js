@@ -1,0 +1,7 @@
+/*!
+ * Nartya FM — © Nartya. Tous droits réservés.
+ * Logiciel propriétaire et confidentiel. Toute rétro-ingénierie, décompilation,
+ * désassemblage, extraction ou redistribution de ce code sans autorisation écrite
+ * préalable de Nartya est strictement interdite.
+ */
+import{app as s,Menu as u,nativeImage as f}from"electron";import g from"path";export function createTaskbarControls({iconsDir:p,getWindow:c,onCommand:a}){let e={hasStation:!1,playing:!1,title:""};const r={},i=t=>r[t]??=f.createFromPath(g.join(p,`${t}.png`));function o(){const t=c();if(process.platform!=="win32"||!t||t.isDestroyed())return;const l=e.hasStation?[]:["disabled"];t.setThumbarButtons([{tooltip:"Station pr\xE9c\xE9dente",icon:i("prev"),flags:l,click:()=>a("prev")},{tooltip:e.playing?"Pause":"\xC9couter",icon:i(e.playing?"pause":"play"),flags:l,click:()=>a("toggle")},{tooltip:"Station suivante",icon:i("next"),flags:l,click:()=>a("next")}]),t.setThumbnailToolTip(e.title||"Nartya FM")}function n(){if(process.platform!=="darwin"||!s.dock)return;const t=[...e.title?[{label:e.title,enabled:!1},{type:"separator"}]:[],{label:e.playing?"Pause":"\xC9couter",enabled:e.hasStation,click:()=>a("toggle")},{label:"Station pr\xE9c\xE9dente",enabled:e.hasStation,click:()=>a("prev")},{label:"Station suivante",enabled:e.hasStation,click:()=>a("next")}];s.dock.setMenu(u.buildFromTemplate(t))}return{update(t={}){e={hasStation:!!t.hasStation,playing:!!t.playing,title:typeof t.title=="string"?t.title.slice(0,200):""},o(),n()},refresh(){o(),n()}}}

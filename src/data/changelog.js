@@ -5,6 +5,28 @@
  */
 export const CHANGELOG = [
   {
+    version: "1.43.0",
+    date: "8 novembre 2026",
+    items: [
+      {
+        type: "new",
+        text: "🎵 Sortie officielle de Dayumi FM : Toute votre musique à la demande et des milliers de radios sans aucune pub, avec importation de playlists (Spotify, Deezer, YouTube Music).",
+      },
+      {
+        type: "new",
+        text: "✨ Écosystème Dayumi unifié : Logo officiel Cristal Or 3D, intégration du statut d'écoute en direct dans le profil et lancement synchronisé depuis Dayumi Hub.",
+      },
+      {
+        type: "improved",
+        text: "🎨 Harmonisation graphique : Thème Nuit Obsidienne profond, typographie Outfit épurée et navigation néon ambre uniforme.",
+      },
+      {
+        type: "improved",
+        text: "🛡️ Compatibilité Windows : Exécutable certifié et optimisé sans blocage Smart App Control.",
+      },
+    ],
+  },
+  {
     version: "1.42.0",
     date: "6 novembre 2026",
     items: [
