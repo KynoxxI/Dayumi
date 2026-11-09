@@ -358,11 +358,10 @@ export default function ContinueWatching({ defaultTab = null, onlyScans = false 
                 role="tab"
                 aria-selected={activeTab === id}
                 onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
-                  activeTab === id
+                className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === id
                     ? "border-primary text-text"
                     : "border-transparent text-muted hover:text-text"
-                }`}
+                  }`}
               >
                 <Icon size={16} />
                 {label}
@@ -377,11 +376,10 @@ export default function ContinueWatching({ defaultTab = null, onlyScans = false 
           {visibleItems.map((item) => (
             <div
               key={item.episodeKey || item.scanKey}
-              className={`min-w-0 shrink-0 grow-0 ${
-                onlyScans
+              className={`min-w-0 shrink-0 grow-0 ${onlyScans
                   ? "basis-[82vw] max-w-[340px] sm:basis-[340px]"
                   : "basis-[260px] sm:basis-[300px]"
-              }`}
+                }`}
               data-carousel-card
             >
               {onlyScans || activeTab === "scans" ? (
