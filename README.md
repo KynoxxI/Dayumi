@@ -1,29 +1,25 @@
 <div align="center">
-  <img src="public/icon.png" alt="Nartya" width="96" height="96" align="middle" />
-  &nbsp;&nbsp;&nbsp;<b>×</b>&nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/claude/D97757" alt="Claude" width="80" height="80" align="middle" />
-  <h1>Nartya</h1>
+  <img src="public/icon.png" alt="Dayumi" width="96" height="96" align="middle" />
+  <h1>Dayumi</h1>
   <p>Application de streaming d'anime pour le bureau, Android et iOS.</p>
   <p>
-    <a href="#développé-avec-claude"><img src="https://img.shields.io/badge/maintenu%20avec-Claude-D97757?logo=claude&logoColor=white" alt="Maintenu avec Claude" /></a>
     <img src="https://img.shields.io/badge/licence-ISC-blue" alt="Licence ISC" />
   </p>
 </div>
 
 ---
 
-Nartya réunit un catalogue d'anime, un lecteur vidéo et le suivi de ce que l'on regarde :
+Dayumi réunit un catalogue d'anime, un lecteur vidéo et le suivi de ce que l'on regarde :
 reprise de lecture, favoris, listes, profil, succès, watch party, téléchargement hors ligne
 et lecture de scans.
 
 Ce dépôt contient l'application cliente. Elle s'appuie sur deux services :
 
-- une **API** qui fournit le catalogue, les épisodes et les métadonnées, documentée sur
-  [nartya.app/api](https://nartya.app/api/) ([spécification OpenAPI](docs/openapi.yaml)) ;
-- un projet **Supabase** pour les comptes et les données utilisateur.
+- une **API** qui fournit le catalogue, les épisodes et les métadonnées ;
+- un backend pour les comptes, la synchronisation et les données utilisateur.
 
-> Le code de l'API n'est pas public, seul son contrat l'est. En développement, l'app se
-> branche sur l'API publique et sur le Supabase de Nartya : il suffit d'un compte Nartya.
+> En développement, l'app se branche sur l'API publique et sur le backend de Dayumi.
+> Le détail est dans [SETUP.md](SETUP.md).
 
 ## Stack
 
@@ -43,7 +39,7 @@ cp .env.example .env
 npm run electron:dev   # fenêtre Electron
 ```
 
-Connectez-vous ensuite avec votre compte Nartya : l'app appelle l'API publique avec votre
+Connectez-vous ensuite avec votre compte Dayumi : l'app appelle l'API publique avec votre
 session, comme la version installée. `.env.example` contient déjà les valeurs publiques du
 projet. Le détail est dans [SETUP.md](SETUP.md).
 
@@ -104,4 +100,4 @@ avec une IA.
 
 ## Licence
 
-ISC © NartyaTeam
+ISC © DayumiTeam
