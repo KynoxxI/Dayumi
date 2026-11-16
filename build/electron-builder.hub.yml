@@ -1,0 +1,55 @@
+appId: com.dayumi.hub
+productName: Dayumi Hub
+directories:
+  buildResources: build
+  output: release/hub
+publish:
+  - provider: generic
+    url: https://dayumi.site/dl/hub
+    channel: latest
+files:
+  - hub/**/*
+  - public/hub/**/*
+  - branding/**/*
+asar: true
+npmRebuild: false
+protocols:
+  - name: Dayumi Hub
+    schemes:
+      - dayumihub
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: "${productName}-${version}-win.${ext}"
+  icon: public/hub/icon.ico
+  requestedExecutionLevel: asInvoker
+nsis:
+  include: build/installer.nsh
+  oneClick: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Dayumi Hub
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
+  icon: public/hub/icon.icns
+  category: public.app-category.utilities
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
+  icon: public/hub/icon.png
+  category: Utility
+  maintainer: DayumiTeam <contact@dayumi.site>

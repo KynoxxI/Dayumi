@@ -1,0 +1,61 @@
+appId: com.dayumi.fm
+productName: Dayumi FM
+directories:
+  buildResources: build
+  output: release/fm
+publish:
+  - provider: generic
+    url: https://dayumi.site/dl/fm
+    channel: latest
+files:
+  - Dayumi-FM/**/*
+  - dist/**/*
+  - electron/**/*
+  - package.json
+asar: true
+npmRebuild: false
+protocols:
+  - name: Dayumi FM
+    schemes:
+      - dayumifm
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  artifactName: "${productName}-${version}-win.${ext}"
+  icon: public/fm/icon.ico
+  requestedExecutionLevel: asInvoker
+nsis:
+  include: build/installer.nsh
+  oneClick: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Dayumi FM
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+portable:
+  artifactName: "${productName}-${version}-portable.${ext}"
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
+  icon: public/fm/icon.icns
+  category: public.app-category.music
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
+  icon: public/fm/icon.png
+  category: AudioVideo
+  maintainer: DayumiTeam <contact@dayumi.site>

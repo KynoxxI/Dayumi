@@ -1,0 +1,10 @@
+file:///C:/Users/manex/Documents/Dev/Streaming%20APP/Dayumi/electron/utils/api-base.js:1
+import { app } from "electron";
+         ^^^
+SyntaxError: The requested module 'electron' does not provide an export named 'app'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
