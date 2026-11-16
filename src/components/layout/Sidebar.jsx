@@ -26,7 +26,7 @@ const TRANS = "250ms cubic-bezier(0.4,0,0.2,1)";
 
 // Pour ouvrir le bon groupe. Le préfixe le plus long l'emporte.
 const GROUP_ROUTES = {
-  parcourir: ["/", "/mangas", "/recherche", "/planning", "/prochainement", "/party", "/tierlists", "/leaderboard"],
+  parcourir: ["/", "/films", "/series", "/movie", "/mangas", "/recherche", "/planning", "/prochainement", "/party", "/tierlists", "/leaderboard"],
   bibliotheque: ["/favorites", "/my-lists", "/history", "/downloads"],
   profil: ["/profile", "/communaute"],
   studio: ["/reports", "/uptime", "/faq"],
@@ -224,13 +224,48 @@ export default function Sidebar() {
           {isHalloween() ? (
             <HalloweenFox className="-mx-0.5 h-10 w-10 shrink-0 text-primary" />
           ) : (
-            <Fox className="h-9 w-9 shrink-0 text-primary" />
+            <Fox className={`h-9 w-9 shrink-0 ${pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie") ? "text-[#7C5CFF]" : "text-primary"}`} />
           )}
           <div className="min-w-0 leading-none" style={fade}>
-            <p className="whitespace-nowrap text-[0.62rem] font-bold uppercase tracking-[0.42em] text-primary">Dayumi</p>
-            <p className="t-impact mt-1.5 whitespace-nowrap text-xl">{isMovie ? "Movie" : isFm ? "FM" : "Anime"}</p>
+            <p className={`whitespace-nowrap text-[0.62rem] font-bold uppercase tracking-[0.42em] ${pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie") ? "text-[#7C5CFF]" : "text-primary"}`}>Dayumi</p>
+            <p className="t-impact mt-1.5 whitespace-nowrap text-xl">
+              {isMovie || pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie")
+                ? "Movie"
+                : isFm
+                ? "FM"
+                : "Anime"}
+            </p>
           </div>
         </div>
+
+        {!isMovie && !isFm && expanded && (
+          <div className="app-no-drag mx-3 mb-2 flex items-center gap-1 rounded-xl bg-white/[0.04] p-1 border border-white/[0.06]">
+            <NavLink
+              to="/"
+              className={() =>
+                `flex-1 rounded-lg py-1.5 text-center text-[0.68rem] font-bold tracking-wide uppercase transition-all ${
+                  !pathname.startsWith("/film") && !pathname.startsWith("/serie") && !pathname.startsWith("/movie") && !pathname.startsWith("/watch/movie") && !pathname.startsWith("/watch/serie")
+                    ? "bg-primary text-white shadow-[0_0_12px_rgba(255,113,62,0.35)]"
+                    : "text-muted hover:text-white"
+                }`
+              }
+            >
+              Anime
+            </NavLink>
+            <NavLink
+              to="/films"
+              className={() =>
+                `flex-1 rounded-lg py-1.5 text-center text-[0.68rem] font-bold tracking-wide uppercase transition-all ${
+                  pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie")
+                    ? "bg-[#7C5CFF] text-white shadow-[0_0_12px_rgba(124,92,255,0.45)]"
+                    : "text-muted hover:text-white"
+                }`
+              }
+            >
+              Movie
+            </NavLink>
+          </div>
+        )}
 
         <nav className="app-no-drag flex flex-1 flex-col gap-0.5 px-2">
             {/* Si Movie : affichage des entrées films & séries dédiées */}
@@ -283,6 +318,8 @@ export default function Sidebar() {
               >
                 <Item to="/" icon={Clapperboard} label="Animes" expanded={expanded} nested />
                 <Item to="/mangas" icon={BookOpen} label="Mangas" expanded={expanded} nested />
+                <Item to="/films" icon={Film} label="Films" expanded={expanded} nested />
+                <Item to="/series" icon={Tv} label="Séries" expanded={expanded} nested />
                 <Item to="/recherche" icon={Search} label="Recherche" expanded={expanded} nested />
                 <Item
                   to="/planning"

@@ -4,6 +4,7 @@ import {
   BookOpen,
   CalendarDays,
   Download,
+  Film,
   Heart,
   HelpCircle,
   History,
@@ -19,6 +20,7 @@ import {
   Settings,
   Sparkles,
   Trophy,
+  Tv,
   UserPlus,
   X,
 } from "lucide-react";
@@ -132,6 +134,8 @@ export default function MobileNavigation({ searchPath = "/recherche", forceVisib
   const sheetItems = useMemo(
     () =>
       [
+        online && { to: "/films", icon: Film, label: "Films" },
+        online && { to: "/series", icon: Tv, label: "Séries" },
         online && { to: "/mangas", icon: BookOpen, label: "Mangas" },
         online && { to: "/prochainement", icon: Sparkles, label: "À venir" },
         online && { to: "/tierlists", icon: LayoutList, label: "Tier lists" },

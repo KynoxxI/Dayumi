@@ -24,7 +24,8 @@ import { IS_DEV as isDev } from "./utils/api-base.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const DEEP_LINK_SCHEME = "dayumi";
+const isMovieApp = app.getName().toLowerCase().includes("movie") || process.env.VITE_APP === "movie";
+const DEEP_LINK_SCHEME = isMovieApp ? "dayumimovie" : "dayumi";
 
 // Lancée par le Hub : pas d'onboarding « Découvre le Hub ».
 const HUB_MANAGED = process.argv.includes("--hub-managed") || process.env.NARTYA_HUB === "1";
@@ -52,13 +53,17 @@ if (process.platform === "win32") {
 
 const APP_ICON = path.join(
   __dirname,
-  process.platform === "win32"
-    ? (isDev ? "../public/icon.ico" : "../dist/icon.ico")
-    : (isDev ? "../public/icon.png" : "../dist/icon.png")
+  isMovieApp
+    ? (process.platform === "win32"
+        ? (isDev ? "../public/movie/icon.ico" : "../dist/movie/icon.ico")
+        : (isDev ? "../public/movie/icon.png" : "../dist/movie/icon.png"))
+    : (process.platform === "win32"
+        ? (isDev ? "../public/icon.ico" : "../dist/icon.ico")
+        : (isDev ? "../public/icon.png" : "../dist/icon.png"))
 );
 
 if (process.platform === "win32") {
-  app.setAppUserModelId("com.dayumi.app");
+  app.setAppUserModelId(isMovieApp ? "com.dayumi.movie" : "com.dayumi.app");
 }
 
 const APP_FILE = path.join(__dirname, "../dist/index.html");
