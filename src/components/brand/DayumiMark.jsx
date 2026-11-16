@@ -6,10 +6,10 @@ import { asset } from "@/lib/asset";
  * et pétales de sakura subtils. Supporte les enfants éventuels (effets Halloween).
  */
 export function DayumiEmblem({ className = "h-12 w-12", alt = "Dayumi", variant = "anime", children, ...rest }) {
-  const isHub = variant === "hub";
-  const imgSrc = isHub ? asset("dayumi-hub.png") : asset("dayumi-anime.png");
-  const shadowClass = isHub
-    ? "drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]"
+  const isPurple = variant === "hub" || variant === "movie";
+  const imgSrc = isPurple ? asset("dayumi-hub.png") : asset("dayumi-anime.png");
+  const shadowClass = isPurple
+    ? "drop-shadow-[0_0_20px_rgba(124,92,255,0.7)]"
     : "drop-shadow-[0_0_16px_rgba(255,120,0,0.5)]";
 
   return (
@@ -39,12 +39,13 @@ export function DayumiEmblem({ className = "h-12 w-12", alt = "Dayumi", variant 
 export const Fox = DayumiEmblem;
 export const HalloweenFox = DayumiEmblem;
 
-/** Emblème + « DAYUMI » + sous-titre. Supporte les déclinaisons Anime et Hub. */
+/** Emblème + « DAYUMI » + sous-titre. Supporte les déclinaisons Anime, Hub et Movie. */
 export function DayumiLockup({ word = "Anime", variant = "anime", className = "" }) {
-  const isHub = variant === "hub" || String(word).toLowerCase() === "hub";
-  const displayWord = isHub ? "Hub" : word;
-  const subtitleColor = isHub ? "text-purple-400" : "text-[#ff7700]";
-  const emblemVariant = isHub ? "hub" : "anime";
+  const isMovieWord = variant === "movie" || String(word).toLowerCase() === "movie";
+  const isHub = !isMovieWord && (variant === "hub" || String(word).toLowerCase() === "hub");
+  const displayWord = isMovieWord ? "Movie" : isHub ? "Hub" : word;
+  const subtitleColor = isMovieWord ? "text-[#7C5CFF]" : isHub ? "text-purple-400" : "text-[#ff7700]";
+  const emblemVariant = isMovieWord || isHub ? "hub" : "anime";
 
   return (
     <div className={`flex items-center justify-center gap-4 ${className}`} role="img" aria-label={`Dayumi ${displayWord}`}>

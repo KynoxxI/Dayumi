@@ -225,9 +225,9 @@ export default function App() {
     if (session?.user?.id && !session.user.is_anonymous) ensureFavoritesLoaded();
   }, [session?.user?.id, session?.user?.is_anonymous, ensureFavoritesLoaded]);
 
-  // Sur desktop, si la session est absente et le chargement terminé, renvoyer immédiatement vers /login
+  // Sur desktop, si la session est absente et le chargement terminé, renvoyer immédiatement vers /login (sauf sur Movie)
   useEffect(() => {
-    if (!platform.isElectron || loading) return;
+    if (!platform.isElectron || loading || isMovie) return;
     if (!session && location.pathname !== "/login" && !location.pathname.startsWith("/party")) {
       navigate("/login", { replace: true });
     }
@@ -237,12 +237,12 @@ export default function App() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-6 bg-bg">
         <DayumiEmblem
-          variant={platform.isElectron ? "hub" : "anime"}
+          variant={isMovie ? "movie" : platform.isElectron ? "hub" : "anime"}
           className="h-24 w-24 animate-pulse"
         />
         <div
           className={`h-7 w-7 animate-spin rounded-full border-2 border-border ${
-            platform.isElectron ? "border-t-purple-500" : "border-t-primary"
+            isMovie ? "border-t-[#7C5CFF]" : platform.isElectron ? "border-t-purple-500" : "border-t-primary"
           }`}
         />
       </div>

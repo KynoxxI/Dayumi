@@ -11,9 +11,17 @@ const getHostnameVariant = () => {
   return null;
 };
 
+const getElectronVariant = () => {
+  if (typeof window !== "undefined" && window.electronAPI?.appVariant) {
+    return window.electronAPI.appVariant;
+  }
+  return null;
+};
+
 export const APP =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP) ||
+  getElectronVariant() ||
   getHostnameVariant() ||
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP) ||
   (typeof process !== "undefined" && process.env?.VITE_APP) ||
   "anime";
 

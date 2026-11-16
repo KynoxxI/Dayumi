@@ -7,6 +7,7 @@ import { getRow } from "@/api/anilist";
 import TermsDialog from "@/components/legal/TermsDialog";
 import { translateAuthError } from "@/lib/authErrors";
 import { platform } from "@/platform";
+import { isMovie } from "@/config/appVariant";
 import HubSignInCard from "@/components/auth/HubSignInCard";
 
 /** Contenu dupliqué et translaté de -50 % pour boucler. */
@@ -54,7 +55,7 @@ export default function LoginPage() {
     if (session && !session.user?.is_anonymous) navigate("/", { replace: true });
   }, [session, navigate]);
 
-  if (platform.isElectron) {
+  if (platform.isElectron && !isMovie) {
     return (
       <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-bg">
         {covers.length > 0 && (
@@ -159,13 +160,20 @@ export default function LoginPage() {
       <div
         className="absolute inset-0"
         style={{
-          background: isHubTheme
+          background: isMovie
+            ? "radial-gradient(55% 55% at 50% 50%, rgba(124, 92, 255, 0.25), transparent 70%)"
+            : isHubTheme
             ? "radial-gradient(55% 55% at 50% 50%, rgba(168, 85, 247, 0.22), transparent 70%)"
             : "radial-gradient(55% 55% at 50% 50%, rgb(var(--primary) / 0.18), transparent 70%)",
         }}
       />
 
-      {isHubTheme ? (
+      {isMovie ? (
+        <DayumiEmblem
+          variant="movie"
+          className="pointer-events-none absolute -bottom-24 -left-16 h-[34rem] w-[34rem] -rotate-6 select-none opacity-20"
+        />
+      ) : isHubTheme ? (
         <DayumiEmblem
           variant="hub"
           className="pointer-events-none absolute -bottom-24 -left-16 h-[34rem] w-[34rem] -rotate-6 select-none opacity-20"
@@ -180,12 +188,16 @@ export default function LoginPage() {
           <div className="rounded-lg bg-surface/70 p-7 shadow-card ring-1 ring-white/10 backdrop-blur-2xl">
             <div className="mb-6 text-center">
               <DayumiLockup
-                word={isHubTheme ? "Hub" : "Anime"}
-                variant={isHubTheme ? "hub" : "anime"}
+                word={isMovie ? "Movie" : isHubTheme ? "Hub" : "Anime"}
+                variant={isMovie ? "movie" : isHubTheme ? "hub" : "anime"}
                 className="mb-5"
               />
               <p className="text-sm leading-relaxed text-muted">
-                {isHubTheme
+                {isMovie
+                  ? mode === "signup"
+                    ? "Crée ton compte pour sauvegarder tes films et séries favoris."
+                    : "Connecte-toi pour retrouver ta liste et ton historique de visionnage."
+                  : isHubTheme
                   ? mode === "signup"
                     ? "Crée ton compte Dayumi pour synchroniser toutes tes applications."
                     : "Connecte-toi pour retrouver ta progression et synchroniser tes applications."
@@ -198,7 +210,7 @@ export default function LoginPage() {
             <form onSubmit={submitEmail} className="space-y-3">
               <label
                 className={`flex items-center gap-2.5 rounded-md bg-surface-2/70 px-3.5 ring-1 ring-border transition-colors ${
-                  isHubTheme ? "focus-within:ring-purple-500/60" : "focus-within:ring-primary/60"
+                  isMovie ? "focus-within:ring-[#7C5CFF]/60" : isHubTheme ? "focus-within:ring-purple-500/60" : "focus-within:ring-primary/60"
                 }`}
               >
                 <Mail size={16} className="shrink-0 text-muted" />
@@ -217,7 +229,7 @@ export default function LoginPage() {
 
               <label
                 className={`flex items-center gap-2.5 rounded-md bg-surface-2/70 px-3.5 ring-1 ring-border transition-colors ${
-                  isHubTheme ? "focus-within:ring-purple-500/60" : "focus-within:ring-primary/60"
+                  isMovie ? "focus-within:ring-[#7C5CFF]/60" : isHubTheme ? "focus-within:ring-purple-500/60" : "focus-within:ring-primary/60"
                 }`}
               >
                 <Lock size={16} className="shrink-0 text-muted" />
@@ -254,7 +266,9 @@ export default function LoginPage() {
                 type="submit"
                 disabled={!!busy}
                 className={`flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 disabled:opacity-60 ${
-                  isHubTheme
+                  isMovie
+                    ? "bg-[#7C5CFF] shadow-[0_0_20px_rgba(124,92,255,0.35)] hover:bg-[#6A4BE8]"
+                    : isHubTheme
                     ? "bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-[0_0_20px_rgba(168,85,247,0.35)]"
                     : "bg-primary"
                 }`}
@@ -274,7 +288,7 @@ export default function LoginPage() {
                   setNotice("");
                 }}
                 className={`font-semibold text-text underline decoration-dotted underline-offset-2 transition-colors ${
-                  isHubTheme ? "hover:text-purple-400" : "hover:text-primary"
+                  isMovie ? "hover:text-[#7C5CFF]" : isHubTheme ? "hover:text-purple-400" : "hover:text-primary"
                 }`}
               >
                 {mode === "signup" ? "Se connecter" : "Créer un compte"}
