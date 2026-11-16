@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LayoutList, X } from "lucide-react";
+import { isAnime } from "@/config/appVariant";
 
 // Changer la clé pour réafficher le bandeau avec une nouvelle annonce.
 const DISMISS_KEY = "dayumi_banner_tierlists_v1";
@@ -21,7 +22,7 @@ export default function FeatureBanner({ className = "" }) {
   const { pathname } = useLocation();
   const [dismissed, setDismissed] = useState(wasDismissed);
 
-  if (dismissed || pathname.startsWith("/tierlists")) return null;
+  if (!isAnime || dismissed || pathname.startsWith("/tierlists")) return null;
 
   const close = () => {
     setDismissed(true);

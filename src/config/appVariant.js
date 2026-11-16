@@ -3,8 +3,17 @@
  * Piloté par VITE_APP ("anime" | "movie" | "fm" | "hub").
  */
 
+const getHostnameVariant = () => {
+  if (typeof window === "undefined" || !window.location) return null;
+  const host = window.location.hostname.toLowerCase();
+  if (host.startsWith("movie.") || host.includes("movie")) return "movie";
+  if (host.startsWith("fm.") || host.includes("fm")) return "fm";
+  return null;
+};
+
 export const APP =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP) ||
+  getHostnameVariant() ||
   (typeof process !== "undefined" && process.env?.VITE_APP) ||
   "anime";
 

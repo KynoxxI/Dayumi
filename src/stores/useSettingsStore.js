@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { applyTheme, applyReduceMotion, DEFAULT_PRESET, DEFAULT_CUSTOM_COLOR } from "@/utils/theme";
+import { isMovie } from "@/config/appVariant";
 import { SELECTABLE_SOURCE_KEYS } from "@/utils/videoSourceUtils";
 
 /** Persisté par machine. Un nouveau réglage s'ajoute dans DEFAULTS, sans autre câblage. */
@@ -48,6 +49,10 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULTS };
     const stored = { ...DEFAULTS, ...JSON.parse(raw) };
+    if (isMovie && stored.themePreset === "vermillon") {
+      stored.themePreset = "cinema";
+      stored.customColor = DEFAULT_CUSTOM_COLOR;
+    }
     if (stored.prioritySource !== "auto" && !isKnownSourceKey(stored.prioritySource)) {
       stored.prioritySource = DEFAULTS.prioritySource;
     }
