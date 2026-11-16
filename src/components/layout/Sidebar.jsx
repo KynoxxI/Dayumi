@@ -206,6 +206,14 @@ export default function Sidebar() {
     transition: expanded ? "opacity 100ms ease 180ms" : "opacity 70ms ease",
   };
 
+  const inMovie =
+    isMovie ||
+    pathname.startsWith("/film") ||
+    pathname.startsWith("/serie") ||
+    pathname.startsWith("/movie") ||
+    pathname.startsWith("/watch/movie") ||
+    pathname.startsWith("/watch/serie");
+
   return (
     // Toujours en w-16 dans le flux : aucun reflow quand la sidebar s'ouvre par-dessus.
     <div className="relative z-30 hidden w-16 shrink-0 md:block">
@@ -224,12 +232,12 @@ export default function Sidebar() {
           {isHalloween() ? (
             <HalloweenFox className="-mx-0.5 h-10 w-10 shrink-0 text-primary" />
           ) : (
-            <Fox className={`h-9 w-9 shrink-0 ${pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie") ? "text-[#7C5CFF]" : "text-primary"}`} />
+            <Fox className={`h-9 w-9 shrink-0 ${inMovie ? "text-[#7C5CFF]" : "text-primary"}`} />
           )}
           <div className="min-w-0 leading-none" style={fade}>
-            <p className={`whitespace-nowrap text-[0.62rem] font-bold uppercase tracking-[0.42em] ${pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie") ? "text-[#7C5CFF]" : "text-primary"}`}>Dayumi</p>
+            <p className={`whitespace-nowrap text-[0.62rem] font-bold uppercase tracking-[0.42em] ${inMovie ? "text-[#7C5CFF]" : "text-primary"}`}>Dayumi</p>
             <p className="t-impact mt-1.5 whitespace-nowrap text-xl">
-              {isMovie || pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie")
+              {inMovie
                 ? "Movie"
                 : isFm
                 ? "FM"
@@ -244,7 +252,7 @@ export default function Sidebar() {
               to="/"
               className={() =>
                 `flex-1 rounded-lg py-1.5 text-center text-[0.68rem] font-bold tracking-wide uppercase transition-all ${
-                  !pathname.startsWith("/film") && !pathname.startsWith("/serie") && !pathname.startsWith("/movie") && !pathname.startsWith("/watch/movie") && !pathname.startsWith("/watch/serie")
+                  !inMovie
                     ? "bg-primary text-white shadow-[0_0_12px_rgba(255,113,62,0.35)]"
                     : "text-muted hover:text-white"
                 }`
@@ -256,7 +264,7 @@ export default function Sidebar() {
               to="/films"
               className={() =>
                 `flex-1 rounded-lg py-1.5 text-center text-[0.68rem] font-bold tracking-wide uppercase transition-all ${
-                  pathname.startsWith("/film") || pathname.startsWith("/serie") || pathname.startsWith("/movie") || pathname.startsWith("/watch/movie") || pathname.startsWith("/watch/serie")
+                  inMovie
                     ? "bg-[#7C5CFF] text-white shadow-[0_0_12px_rgba(124,92,255,0.45)]"
                     : "text-muted hover:text-white"
                 }`
@@ -268,8 +276,8 @@ export default function Sidebar() {
         )}
 
         <nav className="app-no-drag flex flex-1 flex-col gap-0.5 px-2">
-            {/* Si Movie : affichage des entrées films & séries dédiées */}
-            {isMovie ? (
+            {/* Si Movie ou dans la section Movie : affichage des entrées films & séries dédiées */}
+            {inMovie ? (
               <>
                 {online && (
                   <Group
@@ -279,7 +287,7 @@ export default function Sidebar() {
                     open={openGroup === "parcourir"}
                     onToggle={() => toggleGroup("parcourir")}
                   >
-                    <Item to="/" icon={Home} label="Accueil" expanded={expanded} nested />
+                    <Item to={isMovie ? "/" : "/films"} icon={Home} label="Accueil" expanded={expanded} nested />
                     <Item to="/films" icon={Film} label="Films" expanded={expanded} nested />
                     <Item to="/series" icon={Tv} label="Séries" expanded={expanded} nested />
                     <Item to="/recherche" icon={Search} label="Recherche" expanded={expanded} nested />

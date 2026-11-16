@@ -24,7 +24,12 @@ import { IS_DEV as isDev } from "./utils/api-base.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const isMovieApp = app.getName().toLowerCase().includes("movie") || process.env.VITE_APP === "movie";
+const isMovieApp =
+  app.getName().toLowerCase().includes("movie") ||
+  (process.env.VITE_APP || "").toLowerCase() === "movie" ||
+  process.argv.includes("--movie") ||
+  process.argv.some((a) => a.toLowerCase().includes("movie")) ||
+  path.basename(process.execPath).toLowerCase().includes("movie");
 const DEEP_LINK_SCHEME = isMovieApp ? "dayumimovie" : "dayumi";
 
 // Lancée par le Hub : pas d'onboarding « Découvre le Hub ».
@@ -66,7 +71,10 @@ if (process.platform === "win32") {
   app.setAppUserModelId(isMovieApp ? "com.dayumi.movie" : "com.dayumi.app");
 }
 
-const APP_FILE = path.join(__dirname, "../dist/index.html");
+const APP_FILE =
+  isMovieApp && fs.existsSync(path.join(__dirname, "../dist-movie/index.html"))
+    ? path.join(__dirname, "../dist-movie/index.html")
+    : path.join(__dirname, "../dist/index.html");
 const APP_URL = isDev ? "http://localhost:5173/" : pathToFileURL(APP_FILE).href;
 
 /**
@@ -80,9 +88,10 @@ function isAppUrl(url) {
     const parsed = new URL(url);
     if (parsed.protocol !== "file:") return false;
     const file = fileURLToPath(parsed);
-    const distDir = path.resolve(__dirname, "../dist");
-    const normalizedFile = path.resolve(file);
-    return normalizedFile.toLowerCase().startsWith(distDir.toLowerCase());
+    const distDir = path.resolve(__dirname, "../dist").toLowerCase();
+    const distMovieDir = path.resolve(__dirname, "../dist-movie").toLowerCase();
+    const normalizedFile = path.resolve(file).toLowerCase();
+    return normalizedFile.startsWith(distDir) || normalizedFile.startsWith(distMovieDir);
   } catch {
     return false;
   }
@@ -195,7 +204,9 @@ app.on("child-process-gone", (_event, details) => {
 function createWindow({ primary = true, autoReveal = true } = {}) {
   mainLog(`createWindow() autoReveal=${autoReveal}`);
   const win = new BrowserWindow({
-    title: isDev ? "Dayumi Anime (Dev)" : "Dayumi Anime",
+    title: isMovieApp
+      ? (isDev ? "Dayumi Movie (Dev)" : "Dayumi Movie")
+      : (isDev ? "Dayumi Anime (Dev)" : "Dayumi Anime"),
     width: MIN_WIDTH,
     height: 880,
     center: true,
@@ -215,6 +226,7 @@ function createWindow({ primary = true, autoReveal = true } = {}) {
       additionalArguments: [
         ...(IS_CROSTINI ? ["--nartya-crostini"] : []),
         ...(isDev ? ["--nartya-dev"] : []),
+        `--app-variant=${isMovieApp ? "movie" : "anime"}`,
       ],
       // Peu fiable avec une mise à l'échelle fractionnaire : `setFullScreen` est piloté plus bas.
       disableHtmlFullscreenWindowResize: true,

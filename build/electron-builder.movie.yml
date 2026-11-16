@@ -8,7 +8,10 @@ publish:
     url: https://dayumi.site/dl/movie
     channel: latest
 files:
-  - dist/**/*
+  - from: dist-movie
+    to: dist
+    filter:
+      - "**/*"
   - electron/**/*
   - src/shared/**/*
   - src/config/instance.js

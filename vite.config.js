@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
     },
   },
   build: {
-    outDir: "dist",
+    outDir: process.env.VITE_OUTDIR || (appVariant === "movie" ? "dist-movie" : "dist"),
     emptyOutDir: true,
     chunkSizeWarningLimit: 700,
     rollupOptions: {

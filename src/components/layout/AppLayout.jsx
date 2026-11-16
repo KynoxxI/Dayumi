@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MobileNavigation from "./MobileNavigation";
@@ -8,6 +8,9 @@ import ReleaseNotifier from "@/components/ReleaseNotifier";
 import FeatureBanner from "./FeatureBanner";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import AppBackdrop from "./AppBackdrop";
+import { isMovie } from "@/config/appVariant";
+import { applyTheme } from "@/utils/theme";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 
 const DEFAULT_GLOW = "radial-gradient(80% 50% at 80% -10%, rgb(var(--primary) / 0.14), transparent 60%)";
 
@@ -17,8 +20,37 @@ export default function AppLayout() {
   const { pathname } = useLocation();
   useScrollRestoration(mainRef);
 
+  const inMovie =
+    isMovie ||
+    pathname.startsWith("/film") ||
+    pathname.startsWith("/serie") ||
+    pathname.startsWith("/movie") ||
+    pathname.startsWith("/watch/movie") ||
+    pathname.startsWith("/watch/serie");
+
+  useEffect(() => {
+    if (isMovie) {
+      applyTheme({ themePreset: "cinema" });
+      return;
+    }
+    const settings = useSettingsStore.getState();
+    if (inMovie) {
+      applyTheme({ themePreset: "cinema" });
+    } else {
+      applyTheme({
+        themePreset: settings.themePreset || "vermillon",
+        customColor: settings.customColor,
+      });
+    }
+  }, [inMovie]);
+
   const isHeroPage =
     pathname === "/" ||
+    pathname === "/films" ||
+    pathname === "/series" ||
+    pathname === "/movie" ||
+    pathname.startsWith("/movie/") ||
+    pathname.startsWith("/serie/") ||
     pathname === "/mangas" ||
     pathname.startsWith("/anime/") ||
     pathname.startsWith("/manga/");

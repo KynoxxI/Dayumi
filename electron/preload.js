@@ -4,9 +4,12 @@ const { contextBridge, ipcRenderer } = require("electron");
 // calcule arrive par `additionalArguments`.
 const IS_CROSTINI = process.argv.includes("--nartya-crostini");
 const IS_DEV = process.argv.includes("--nartya-dev");
+const variantArg = process.argv.find((a) => a.startsWith("--app-variant="));
+const appVariant = variantArg ? variantArg.split("=")[1] : (process.env.VITE_APP || "anime");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   platform: process.platform,
+  appVariant,
 
   // ChromeOS/Crostini, où le GPU est désactivé.
   hardwareAccelerationDisabled: IS_CROSTINI,
