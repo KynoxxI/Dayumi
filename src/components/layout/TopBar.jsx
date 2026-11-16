@@ -3,6 +3,8 @@ import { platform } from "@/platform";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search, X, Loader2, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { searchAnimes } from "@/api/animeApi";
+import { searchMulti } from "@/api/movieApi";
+import { isMovie } from "@/config/appVariant";
 import { useDisplayTitle } from "@/stores/useTitlesStore";
 import { MAIN_GENRES, SECONDARY_GENRES } from "@/utils/genres";
 import { EPISODE_RANGES } from "@/utils/episodeRanges";
@@ -23,9 +25,18 @@ export default function TopBar({ scrolled }) {
   const navigate = useNavigate();
   const displayTitle = useDisplayTitle();
   const { pathname, search } = useLocation();
+  const inMovie =
+    isMovie ||
+    pathname.startsWith("/film") ||
+    pathname.startsWith("/serie") ||
+    pathname.startsWith("/movie") ||
+    pathname.startsWith("/watch/movie") ||
+    pathname.startsWith("/watch/serie");
   const isMangaSearch =
-    pathname === "/mangas" ||
-    (pathname === "/search" && new URLSearchParams(search).get("media") === "manga");
+    !inMovie && (
+      pathname === "/mangas" ||
+      (pathname === "/search" && new URLSearchParams(search).get("media") === "manga")
+    );
   const showBack =
     pathname.startsWith("/anime/") ||
     pathname.startsWith("/genre/") ||
@@ -94,8 +105,22 @@ export default function TopBar({ scrolled }) {
     setLoading(true);
     const id = setTimeout(async () => {
       try {
-        const r = await searchAnimes(term, 8, isMangaSearch ? "manga" : "anime");
-        setResults(r);
+        if (inMovie) {
+          const res = await searchMulti(term);
+          setResults(
+            (res.items || []).slice(0, 8).map((it) => ({
+              slug: it.mediaType === "serie" ? `serie/${it.id}` : `movie/${it.id}`,
+              title: it.title,
+              cover: it.poster,
+              year: it.year,
+              format: it.mediaType === "serie" ? "Série" : "Film",
+              isMovieItem: true,
+            }))
+          );
+        } else {
+          const r = await searchAnimes(term, 8, isMangaSearch ? "manga" : "anime");
+          setResults(r);
+        }
         setActiveIndex(-1);
         setOpen(true);
       } finally {
@@ -103,7 +128,7 @@ export default function TopBar({ scrolled }) {
       }
     }, 320);
     return () => clearTimeout(id);
-  }, [term, isMangaSearch]);
+  }, [term, isMangaSearch, inMovie]);
 
   useEffect(() => {
     const onClick = (e) => {
@@ -120,7 +145,11 @@ export default function TopBar({ scrolled }) {
     setOpen(false);
     setActiveIndex(-1);
     setTerm("");
-    navigate(`/anime/${slug}${isMangaSearch ? "?tab=scans" : ""}`);
+    if (slug.startsWith("movie/") || slug.startsWith("serie/")) {
+      navigate(`/${slug}`);
+    } else {
+      navigate(`/anime/${slug}${isMangaSearch ? "?tab=scans" : ""}`);
+    }
   };
 
   const toggleGenre = (g) => {
@@ -139,6 +168,13 @@ export default function TopBar({ scrolled }) {
 
   // La route historique /search reste celle des mangas.
   const runSearch = () => {
+    setOpen(false);
+    setShowFilters(false);
+    if (inMovie) {
+      navigate(`/recherche?q=${encodeURIComponent(term.trim())}`);
+      setTerm("");
+      return;
+    }
     const params = new URLSearchParams();
     if (term.trim()) params.set("q", term.trim());
     if (isMangaSearch) params.set("media", "manga");
@@ -171,7 +207,11 @@ export default function TopBar({ scrolled }) {
       )}
       {!hideSearch && (
       <div ref={boxRef} className="app-no-drag pointer-events-auto relative ml-auto w-full max-w-md">
-        <div className="flex items-center gap-2.5 rounded-2xl bg-white/[0.04] px-4 py-2.5 border border-white/10 backdrop-blur-2xl transition focus-within:border-primary/60 focus-within:bg-black/70 shadow-lg focus-within:shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+        <div className={`flex items-center gap-2.5 rounded-2xl bg-white/[0.04] px-4 py-2.5 border border-white/10 backdrop-blur-2xl transition focus-within:bg-black/70 shadow-lg ${
+          inMovie
+            ? "focus-within:border-[#7C5CFF]/60 focus-within:shadow-[0_0_20px_rgba(124,92,255,0.25)]"
+            : "focus-within:border-primary/60 focus-within:shadow-[0_0_20px_rgba(249,115,22,0.2)]"
+        }`}>
           <Search size={17} className="text-muted" />
           <input
             ref={inputRef}
@@ -200,7 +240,7 @@ export default function TopBar({ scrolled }) {
                 else runSearch();
               }
             }}
-            placeholder={`Rechercher un ${isMangaSearch ? "manga" : "anime"}…${platform.isMobile ? "" : " (Ctrl+F)"}`}
+            placeholder={`Rechercher un ${isMangaSearch ? "manga" : inMovie ? "film, une série" : "anime"}…${platform.isMobile ? "" : " (Ctrl+F)"}`}
             className="w-full bg-transparent text-sm text-text outline-none placeholder:text-muted"
           />
           {loading ? (
@@ -213,7 +253,7 @@ export default function TopBar({ scrolled }) {
             )
           )}
           {/* Pastille = nombre de filtres actifs */}
-          {!isMangaSearch && <button
+          {!isMangaSearch && !inMovie && <button
             onClick={() => {
               setShowFilters((v) => !v);
               setOpen(false);

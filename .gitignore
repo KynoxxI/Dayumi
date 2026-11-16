@@ -41,3 +41,4 @@ supabase/.temp/
 # Config locale de l'IDE et brouillons de notes de version.
 /.idea/
 /PATCHNOTE-DISCORD.md
+dist-movie/

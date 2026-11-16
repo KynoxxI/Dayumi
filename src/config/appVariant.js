@@ -19,9 +19,9 @@ const getElectronVariant = () => {
 };
 
 export const APP =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP) ||
   getElectronVariant() ||
   getHostnameVariant() ||
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_APP) ||
   (typeof process !== "undefined" && process.env?.VITE_APP) ||
   "anime";
 

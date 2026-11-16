@@ -230,9 +230,9 @@ export default function Sidebar() {
       >
         <div className="app-drag flex h-[84px] shrink-0 items-center gap-3 px-[14px]">
           {isHalloween() ? (
-            <HalloweenFox className="-mx-0.5 h-10 w-10 shrink-0 text-primary" />
+            <HalloweenFox variant={inMovie ? "movie" : "anime"} className="-mx-0.5 h-10 w-10 shrink-0 text-primary" />
           ) : (
-            <Fox className={`h-9 w-9 shrink-0 ${inMovie ? "text-[#7C5CFF]" : "text-primary"}`} />
+            <Fox variant={inMovie ? "movie" : "anime"} className={`h-9 w-9 shrink-0 ${inMovie ? "text-[#7C5CFF]" : "text-primary"}`} />
           )}
           <div className="min-w-0 leading-none" style={fade}>
             <p className={`whitespace-nowrap text-[0.62rem] font-bold uppercase tracking-[0.42em] ${inMovie ? "text-[#7C5CFF]" : "text-primary"}`}>Dayumi</p>
